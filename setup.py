@@ -10,7 +10,8 @@ setup(
     version = "0.0.1",
     author = "Flowroute Developers",
     description = ("A time-zone aware SMS based reminder service."),
-    packages=['an_example_pypi_project', 'tests'],
+    packages=['appointment_reminder', 'tests'],
+    url='git@gitlab.internal:l-pod/appointment-reminder.git',
     long_description=read('README'),
     classifiers=[
         "Development Status :: 1",
