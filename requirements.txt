@@ -1,4 +1,4 @@
-amqp==1.4.9
+amqp==2.0.1
 anyjson==0.3.3
 billiard==3.3.0.23
 celery==3.1.23
@@ -7,6 +7,9 @@ itsdangerous==0.24
 Jinja2==2.8
 kombu==3.0.35
 MarkupSafe==0.23
+python-json-logger==0.1.4
 pytz==2016.4
 redis==2.10.5
+SQLAlchemy==1.0.13
+vine==1.1.0
 Werkzeug==0.11.9
