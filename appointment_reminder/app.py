@@ -1,7 +1,7 @@
 from flask import Flask
 from celery import Celery
 
-from settings import CELERY_BROKER_URL, CELERY_RESULT_BACKEND, DEBUG_MODE
+from settings import CELERY_BROKER_URL, CELERY_RESULT_BACKEND, DEBUG_MODE, TEST_DB, DB
 from database import init_db
 
 
@@ -10,6 +10,11 @@ def create_app():
     app.config.update(
         CELERY_BROKER_URL=CELERY_BROKER_URL,
         CELERY_RESULT_BACKEND=CELERY_RESULT_BACKEND)
+    if DEBUG_MODE:
+        app.debug = DEBUG_MODE
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + TEST_DB
+    else:
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + DB
     init_db()
     return app
 
