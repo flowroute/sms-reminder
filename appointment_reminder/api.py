@@ -43,14 +43,14 @@ def add_reminder():
         appt_dt = str(body['appointment_time'])
         notify_win = int(body['notify_window'])
         location = body.get('location', None)
-        participants = body.get('participants', None)
+        participant = body.get('participant', None)
     except KeyError:
         raise InvalidAPIUsage(
             ("Required arguments: 'contact_number' (str), "
              "'appointment_time' (str) eg. '2016-01-01 13:00', "
              "'notify_window' (int)"))
     appt = Reminder(contact_num, appt_dt, notify_win,
-                    location, participants)
+                    location, participant)
     db_session.add(appt)
     db_session.commit()
     send_reminder.apply_async(args=[appt.id], eta=appt.notify_dt)
