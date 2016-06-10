@@ -27,27 +27,6 @@ def setup_module(module):
                               "Flip settings.DEBUG to True"))
 
 
-class MockController():
-        def __init__(self):
-            self.requests = []
-            self.resp = []
-
-        def create_message(self, msg):
-            self.requests.append(msg)
-            try:
-                err = self.resp.pop(0)
-            except:
-                pass
-            else:
-                if err is False:
-                    raise Exception("Unkown exception from FlowrouteSDK.")
-
-
-@pytest.fixture
-def mock_controller():
-    return MockController()
-
-
 @pytest.fixture
 def appointment_details():
     content = {'contact_number': '12223334444',

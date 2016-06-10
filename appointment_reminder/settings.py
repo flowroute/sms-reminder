@@ -18,6 +18,6 @@ CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL',
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND',
                                        'redis://localhost:6379')
 
-MSG_TEMPLATE = ("Greetings from {}. This a reminder for your {} " # company, datetime
+MSG_TEMPLATE = ("[{}] This a reminder for your {} " # company, datetime
                 "appointment{}. Please reply 'Yes' to confirm, or 'No' "
-                "to cancel this appointment.")  # if location, at location, if participants, with particpants
+                "to cancel.")  # if location, at location, if participants, with particpants

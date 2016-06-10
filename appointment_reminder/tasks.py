@@ -18,9 +18,9 @@ sms_controller = APIController(username=FLOWROUTE_ACCESS_KEY,
 def create_message_body(appt):
     appt_context = ''
     if appt.location:
-        appt_context + ' at {}'.format(appt.location)
-    if appt.participants:
-        appt_context + ' with {}'.format(appt.participants)
+        appt_context += ' at {}'.format(appt.location)
+    if appt.participant:
+        appt_context += ' with {}'.format(appt.participant)
     msg = MSG_TEMPLATE.format(ORG_NAME, appt.appt_dt, appt_context)
     return msg
 
