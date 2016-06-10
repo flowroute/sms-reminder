@@ -1,13 +1,14 @@
-from sqlalchemy.orm import NoResultFound
+from sqlalchemy.orm.exc import NoResultFound
 
 from FlowrouteMessagingLib.Controllers.APIController import APIController
 from FlowrouteMessagingLib.Models.Message import Message
 
-from app import celery
-from settings import (FLOWROUTE_ACCESS_KEY, FLOWROUTE_SECRET_KEY,
-                      FLOWROUTE_NUMBER, MSG_TEMPLATE, ORG_NAME)
-from database import Appointment
-from log import log
+from appointment_reminder.app import celery
+from appointment_reminder.settings import (
+    FLOWROUTE_ACCESS_KEY, FLOWROUTE_SECRET_KEY, FLOWROUTE_NUMBER,
+    MSG_TEMPLATE, ORG_NAME)
+from appointment_reminder.models import Reminder
+from appointment_reminder.log import log
 
 
 sms_controller = APIController(username=FLOWROUTE_ACCESS_KEY,
@@ -29,7 +30,7 @@ def send_reminder(appt_id):
     """
     """
     try:
-        appt = Appointment.query.filter_by(id=appt_id).one()
+        appt = Reminder.query.filter_by(id=appt_id).one()
     except NoResultFound:
         log.error({"message": "Received unknown appointment id.",
                    "status": "failed"})

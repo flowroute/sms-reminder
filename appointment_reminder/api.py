@@ -3,11 +3,11 @@ import json
 from flask import request, Response
 from sqlalchemy.orm.exc import NoResultFound
 
-from log import log
-from app import app
-from tasks import send_reminder
-from database import db_session
-from models import Reminder
+from appointment_reminder.log import log
+from appointment_reminder.app import app
+from appointment_reminder.tasks import send_reminder
+from appointment_reminder.database import db_session
+from appointment_reminder.models import Reminder
 
 # TODO add logging
 # TODO add tz support
