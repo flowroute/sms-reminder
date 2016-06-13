@@ -2,6 +2,7 @@ import json
 
 from flask import request, Response
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy import desc
 
 from appointment_reminder.log import log
 from appointment_reminder.app import app
@@ -11,7 +12,7 @@ from appointment_reminder.models import Reminder
 
 # TODO add logging
 # TODO add tz support
-# TODO is grabbing the oldest reminder for a given customer good enough? Send a code with it?
+# TODO is grabbing the newest reminder for a given customer good enough? Send a code with it?
 
 
 @app.teardown_appcontext
@@ -64,27 +65,33 @@ def add_reminder():
 def get_reminders():
     reminders = Reminder.query.all()
     res = [{'reminder_id': rm.id, 'contact_number': rm.contact_num,
-            'appt_datetime': rm.appt_dt, 'notify_at': rm.notify_dt,
+            'appt_datetime': str(rm.appt_dt), 'notify_at': str(rm.notify_dt),
             'has_confirmed': rm.has_confirmed, 'location': rm.location,
-            'participants': rm.participants} for rm in reminders]
-    return Response(json.dumps({"reminders": res}))
+            'participant': rm.participant} for rm in reminders]
+    return Response(json.dumps({"reminders": res}), status=200,
+                    content_type='application/json')
 
 
-@app.route('/reminder/<uuid:reminder_id>', methods=['GET'])
+@app.route('/reminder/<reminder_id>', methods=['GET'])
 def get_reminder(reminder_id):
     try:
-        reminder = Reminder.query.filter_by(id=reminder_id).one()
+        rm = Reminder.query.filter_by(id=reminder_id).one()
     except NoResultFound:
         return Response(
             response=json.dumps({"message": "unknown reminder id"}),
             status_code=404, content_type='application/json')
     else:
+        res = {'reminder_id': rm.id, 'contact_number': rm.contact_num,
+               'appt_datetime': str(rm.appt_dt),
+               'notify_at': str(rm.notify_dt), 'has_confirmed':
+               rm.has_confirmed, 'location': rm.location,
+               'participant': rm.participant}
         return Response(
-            response=json.dumps(vars(reminder)),
-            status_code=200, content_type='application/json')
+            response=json.dumps(res),
+            status=200, content_type='application/json')
 
 
-@app.route('/reminder/<uuid:reminder_id>', methods=['DELETE'])
+@app.route('/reminder/<reminder_id>', methods=['DELETE'])
 def remove_reminder(reminder_id):
     try:
         reminder = Reminder.query.filter_by(id=reminder_id).one()
@@ -97,7 +104,7 @@ def remove_reminder(reminder_id):
         db_session.commit()
         msg = {"message":
                "successfully deleted reminder {}".format(reminder_id)}
-        return Response(response=json.dumps(msg), response_code=200,
+        return Response(response=json.dumps(msg), status=200,
                         content_type='application/json')
 
 
@@ -115,15 +122,21 @@ def inbound_handler():
         assert len(virtual_tn) <= 18
         sms_from = body['from']
         assert len(sms_from) <= 18
-        message = body['body'].upper()
     except (TypeError, KeyError, AssertionError) as e:
         msg = ("Malformed inbound message: {}".format(body))
         log.error({"message": msg, "status": "failed", "exc": str(e)})
         return Response('There was an issue parsing your request.', status=400)
     else:
-        appt = Reminder.query.filter_by(
-            contact_num=sms_from, has_confirmed=None).order_by(
-            Reminder.notify_dt.desc()).one()
+        try:
+            appt = Reminder.query.filter_by(
+                contact_num=sms_from, has_confirmed=None).order_by(
+                desc(Reminder.notify_dt)).one()
+        except NoResultFound:
+            msg = "no existing un-responded reminder for contact {}".format(
+                sms_from)
+            log.info({"message": msg,
+                      "status": "succeeded"})
+        message = body['body'].upper()
         if 'YES' in message:
             appt.has_confirmed = True
         elif 'NO' in message:
