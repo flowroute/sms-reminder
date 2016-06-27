@@ -5,11 +5,10 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import desc
 
 from appointment_reminder.log import log
-from appointment_reminder.app import app
 from appointment_reminder.tasks import send_reminder
 from appointment_reminder.database import db_session
 from appointment_reminder.models import Reminder
-
+from appointment_reminder import app
 # TODO add logging
 # TODO add tz support
 # TODO is grabbing the newest reminder for a given customer good enough? Send a code with it?
@@ -144,3 +143,4 @@ def inbound_handler():
         db_session.add(appt)
         db_session.commit()
     return Response(status=200)
+

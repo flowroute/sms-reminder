@@ -1,18 +1,37 @@
 from sqlalchemy.orm.exc import NoResultFound
+from celery import Celery
 
 from FlowrouteMessagingLib.Controllers.APIController import APIController
 from FlowrouteMessagingLib.Models.Message import Message
 
-from appointment_reminder.app import celery
 from appointment_reminder.settings import (
     FLOWROUTE_ACCESS_KEY, FLOWROUTE_SECRET_KEY, FLOWROUTE_NUMBER,
     MSG_TEMPLATE, ORG_NAME)
 from appointment_reminder.models import Reminder
 from appointment_reminder.log import log
-
+from appointment_reminder.service import reminder_app
 
 sms_controller = APIController(username=FLOWROUTE_ACCESS_KEY,
                                password=FLOWROUTE_SECRET_KEY)
+
+
+def new_celery(app=reminder_app):
+    celery = Celery(app.import_name,
+                    backend=app.config['CELERY_RESULT_BACKEND'],
+                    broker=app.config['CELERY_BROKER_URL'])
+    celery.conf.update(app.config)
+    TaskBase = celery.Task
+
+    class ContextTask(TaskBase):
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+    celery.Task = ContextTask
+    return celery
+
+celery = new_celery()
 
 
 def create_message_body(appt):
@@ -25,7 +44,7 @@ def create_message_body(appt):
     return msg
 
 
-@celery.task(name='tasks.send_reminder')
+@celery.task()
 def send_reminder(appt_id):
     """
     """

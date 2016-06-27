@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime, timedelta
 
-from appointment_reminder.app import app
+from appointment_reminder.service import reminder_app as app
 from appointment_reminder.models import Reminder
 from appointment_reminder.database import db_session
 from appointment_reminder.settings import TEST_DB
