@@ -3,6 +3,8 @@ import json
 from flask import request, Response
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import desc
+import arrow
+from arrow.parser import ParserError
 
 from appointment_reminder.log import log
 from appointment_reminder.tasks import send_reminder
@@ -40,14 +42,14 @@ def add_reminder():
     body = request.json
     try:
         contact_num = str(body['contact_number'])
-        appt_dt = str(body['appointment_time'])
+        appt_dt = arrow.get(body['appointment_time'], "YYY-MM-DDTHH:mmZ")
         notify_win = int(body['notify_window'])
         location = body.get('location', None)
         participant = body.get('participant', None)
-    except KeyError:
+    except (KeyError, ParserError):
         raise InvalidAPIUsage(
             ("Required arguments: 'contact_number' (str), "
-             "'appointment_time' (str) eg. '2016-01-01 13:00', "
+             "'appointment_time' (str) eg. '2016-01-01T13:00+02:00', "
              "'notify_window' (int)"))
     appt = Reminder(contact_num, appt_dt, notify_win,
                     location, participant)

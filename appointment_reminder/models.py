@@ -1,5 +1,4 @@
 import uuid
-import arrow
 
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy.orm.exc import NoResultFound
@@ -37,9 +36,7 @@ class Reminder(Base):
     def __init__(self, contact_num, appt_dt, notify_win, location, participant):
         self.id = uuid.uuid4().hex
         self.contact_num = contact_num
-        appt_dt = pendulum.Pendulum.create_from_format(appt_dt, '%Y-%m-%dT%H:%M:%S%z')
-        self.timezone_name = appt_dt.timezone_name
-        self.appt_dt = appt_dt.to('utc')
-        self.notify_dt = self.appt_dt.sub_hours(notify_win)
+        self.appt_dt = appt_dt
+        self.notify_dt = self.appt_dt.to('utc').replace(hours=-notify_win)
         self.location = location
         self.participant = participant
