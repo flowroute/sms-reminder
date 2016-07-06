@@ -1,7 +1,7 @@
 import pytest
 import json
 import mock
-from datetime import datetime, timedelta
+import pendulum
 from sqlalchemy.orm.exc import NoResultFound
 
 from appointment_reminder.settings import TEST_DB
@@ -34,7 +34,7 @@ REMINDER_FIELDS = ('contact_number', 'participant', 'reminder_id',
 @pytest.fixture
 def appointment_details():
     content = {'contact_number': '12223334444',
-               'appointment_time': '2020-01-01 13:00',
+               'appointment_time': '2020-01-01T13:00:00+0300',
                'notify_window': '24',
                'location': 'Flowroute',
                'participant': 'Casey',
@@ -45,7 +45,7 @@ def appointment_details():
 @pytest.fixture
 def new_appointment():
     contact = '1222333555'
-    appt_str_time_0 = '2030-01-01 13:00'
+    appt_str_time_0 = '2030-01-01T13:00:00+0000'
     notify_win = 24
     location = 'Flowroute HQ'
     participant_0 = 'Development Teams'
@@ -57,13 +57,13 @@ def new_appointment():
 @pytest.fixture
 def new_appointments(new_appointment):
     contact = '12223334444'
-    appt_str_time_0 = '2016-01-01 13:00'
+    appt_str_time_0 = '2016-01-01T13:00:00+0700'
     notify_win = 24
     location = 'Family Physicians'
     participant_0 = 'Dr Smith'
     reminder_0 = Reminder(contact, appt_str_time_0, notify_win,
                           location, participant_0)
-    appt_str_time_1 = '2020-01-01 13:00'
+    appt_str_time_1 = '2020-01-01T13:00:00+0000'
     participant_1 = 'Dr Martinez'
     reminder_1 = Reminder(contact, appt_str_time_1, notify_win,
                           location, participant_1)
@@ -83,7 +83,7 @@ def test_add_reminder_success(mock_send_reminder, appointment_details):
     assert mock_send_reminder.apply_async.called == 1
     call_args = mock_send_reminder.apply_async.call_args
     reminder_time = appointment_details['appointment_time']
-    dt = datetime.strptime(reminder_time, '%Y-%m-%d %H:%M')
+    dt = pendulum.Pendulum.strptime(reminder_time, '%Y-%m-%dT%H:%M:%S%z')
     notify_dt = dt - timedelta(hours=int(appointment_details['notify_window']))
     reminder_id = call_args[1]['args'][0]
     reminder = Reminder.query.one()

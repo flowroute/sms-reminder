@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timedelta
+import arrow
 
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy.orm.exc import NoResultFound
@@ -14,7 +14,7 @@ class Reminder(Base):
     """
     @classmethod
     def clean_expired(cls):
-        current_ts = datetime.utcnow()
+        current_ts = pendulum.utcnow()
         try:
             expired_reminders = db_session.query(cls).filter(
                 cls.appt_dt <= current_ts).all()
@@ -37,7 +37,9 @@ class Reminder(Base):
     def __init__(self, contact_num, appt_dt, notify_win, location, participant):
         self.id = uuid.uuid4().hex
         self.contact_num = contact_num
-        self.appt_dt = datetime.strptime(appt_dt, '%Y-%m-%d %H:%M')
-        self.notify_dt = self.appt_dt - timedelta(hours=notify_win)
+        appt_dt = pendulum.Pendulum.create_from_format(appt_dt, '%Y-%m-%dT%H:%M:%S%z')
+        self.timezone_name = appt_dt.timezone_name
+        self.appt_dt = appt_dt.to('utc')
+        self.notify_dt = self.appt_dt.sub_hours(notify_win)
         self.location = location
         self.participant = participant

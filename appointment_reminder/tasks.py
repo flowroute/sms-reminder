@@ -6,7 +6,7 @@ from FlowrouteMessagingLib.Models.Message import Message
 
 from appointment_reminder.settings import (
     FLOWROUTE_ACCESS_KEY, FLOWROUTE_SECRET_KEY, FLOWROUTE_NUMBER,
-    MSG_TEMPLATE, ORG_NAME)
+    MSG_TEMPLATE, ORG_NAME, DT_LOCALE)
 from appointment_reminder.models import Reminder
 from appointment_reminder.log import log
 from appointment_reminder.service import reminder_app
@@ -16,9 +16,7 @@ sms_controller = APIController(username=FLOWROUTE_ACCESS_KEY,
 
 
 def new_celery(app=reminder_app):
-    celery = Celery(app.import_name,
-                    backend=app.config['CELERY_RESULT_BACKEND'],
-                    broker=app.config['CELERY_BROKER_URL'])
+    celery = Celery(app.import_name)
     celery.conf.update(app.config)
     TaskBase = celery.Task
 
@@ -40,7 +38,7 @@ def create_message_body(appt):
         appt_context += ' at {}'.format(appt.location)
     if appt.participant:
         appt_context += ' with {}'.format(appt.participant)
-    msg = MSG_TEMPLATE.format(ORG_NAME, appt.appt_dt, appt_context)
+    msg = MSG_TEMPLATE.format(ORG_NAME, appt.appt_dt.humanize(locale=DT_LOCALE), appt_context)
     return msg
 
 
