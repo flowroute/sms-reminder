@@ -1,0 +1,25 @@
+#!/bin/sh
+
+CMD="$@"
+
+if [ "$1" = "test" ]; then
+   shift
+   CMD="/app/ve/bin/py.test test$@"
+fi
+
+if [ "$1" = "coverage" ]; then
+   shift
+   CMD="/app/ve/bin/py.test --cov-report html --cov=$APP"
+fi
+
+if [ "$1" = "serve" ]; then
+   shift
+   CMD="/app/ve/bin/gunicorn -b 0.0.0.0:8000 -w 4 appointment_reminder.service:reminder_app $@"
+fi
+
+if [ "$1" = "celery_worker" ]; then
+    shift
+    CMD="/app/ve/bin/celery worker -A appointment_reminder.tasks.celery $@"
+fi
+
+exec $CMD
