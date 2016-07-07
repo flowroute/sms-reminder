@@ -6,6 +6,7 @@ services:
     command: redis-server
     volumes:
       - 'redis:/var/lib/redis/data'
+      - 'sqlite:/var/lib/sqlite/data'
     ports:
       - '6379:6379'
 
@@ -14,6 +15,8 @@ services:
     command: serve
     ports:
       - '8000:8000'
+    volumes:
+      - 'sqlite:/var/lib/sqlite/data'
 
   celery:
     build: .
@@ -23,3 +26,4 @@ services:
 
 volumes:
   redis:
+  sqlite:

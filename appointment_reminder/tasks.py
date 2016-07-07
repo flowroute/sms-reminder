@@ -53,8 +53,9 @@ def send_reminder(reminder_id):
     try:
         appt = Reminder.query.filter_by(id=reminder_id).one()
     except NoResultFound:
-        log.error({"message": "Received unknown appointment id {}.".format(
-            reminder_id), "reminder_id": reminder_id})
+        log.error(
+            {"message": "Received unknown appointment with id {}.".format(
+             reminder_id), "reminder_id": reminder_id})
         return
     msg_body = create_message_body(appt)
     message = Message(
