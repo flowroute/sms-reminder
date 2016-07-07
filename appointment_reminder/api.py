@@ -2,7 +2,7 @@ import json
 
 from flask import request, Response
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy import desc
+from sqlalchemy.exc import IntegrityError
 import arrow
 from arrow.parser import ParserError
 
@@ -48,14 +48,27 @@ def add_reminder():
             ("Required arguments: 'contact_number' (str), "
              "'appointment_time' (str) eg. '2016-01-01T13:00+02:00', "
              "'notify_window' (int)"))
-    reminder = Reminder(contact_num, appt_dt, notify_win,
-                        location, participant)
-    db_session.add(reminder)
-    db_session.commit()
-    send_reminder.apply_async(args=[reminder.id], eta=reminder.notify_dt)
-    msg = "successfully created a new reminder with id {}".format(reminder.id)
-    content = json.dumps({"message": msg, "reminder_id": reminder.id})
-    return Response(content, content_type="application/json")
+    else:
+        reminder = Reminder(contact_num, appt_dt, notify_win,
+                            location, participant)
+        db_session.add(reminder)
+    try:
+        db_session.commit()
+    except IntegrityError:
+        msg = ("unable to create a new reminder. duplicate "
+               "contact_number {}".format(contact_num))
+        log.error({"message": msg})
+        content = json.dumps({"message": msg})
+        status = 400
+    else:
+        send_reminder.apply_async(args=[reminder.id], eta=reminder.notify_dt)
+        msg = "successfully created a reminder with id {}".format(reminder.id)
+        log.info({"message": msg})
+        content = json.dumps({"message": msg, "reminder_id": reminder.id})
+        status = 200
+    finally:
+        return Response(content, status=status,
+                        content_type="application/json")
 
 
 @app.route('/reminder', methods=['GET'])

@@ -19,7 +19,6 @@ CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND',
                                        'redis://localhost:6379')
 CELERY_ENABLE_UTC = True
 
-DT_LOCALE = 'en'  # The language of the datetime string representation
-MSG_TEMPLATE = ("[{}] You have an appointment on {}{}. "  # company, datetime
+MSG_TEMPLATE = ("[{}] You have an appointment on {}{}. "  # company, datetime, additional details
                 "Please reply 'Yes' to confirm, or 'No' "
-                "to cancel.")  # if location, at location, if participants, with particpants
+                "to cancel.")

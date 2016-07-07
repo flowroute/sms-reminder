@@ -10,6 +10,7 @@ from appointment_reminder.settings import TEST_DB
 
 def teardown_module(module):
     if TEST_DB in app.config['SQLALCHEMY_DATABASE_URI']:
+        db_session.rollback()
         Reminder.query.delete()
         db_session.commit()
     else:
@@ -17,8 +18,9 @@ def teardown_module(module):
                               "Flip settings.DEBUG to True"))
 
 
-def setup_module(module):
+def setup_function(function):
     if TEST_DB in app.config['SQLALCHEMY_DATABASE_URI']:
+        db_session.rollback()
         Reminder.query.delete()
         db_session.commit()
     else:
@@ -27,7 +29,7 @@ def setup_module(module):
 
 
 def test_reminder_init():
-    contact = '12223334444'
+    contact = '12223338888'
     appt_str_time = '2016-01-01T13:00+00:00'
     appt_dt = arrow.get(appt_str_time, "YYYY-MM-DDTHH:mmZ")
     notify_win = 24
@@ -39,8 +41,8 @@ def test_reminder_init():
     db_session.commit()
     assert reminder.contact_num == contact
     assert reminder.id is not None
-    assert reminder.appt_user_dt == appt_dt
-    assert reminder.appt_sys_dt == appt_dt.to('utc')
+    assert arrow.get(reminder.appt_user_dt) == appt_dt
+    assert arrow.get(reminder.appt_sys_dt) == appt_dt.to('utc')
     assert reminder.location == location
     assert reminder.participant == participant
 
@@ -64,18 +66,19 @@ def test_reminder_honors_uniqueness():
 
 
 def test_clean_expired():
-    contact = '12223334444'
+    contact_0 = '12223334444'
     appt_str_time_0 = '2016-01-01T13:00+00:00'
     notify_win = 24
     location = 'Family Physicians'
     participant_0 = 'Dr Smith'
     appt_dt_0 = arrow.get(appt_str_time_0, "YYYY-MM-DDTHH:mmZ")
-    reminder_0 = Reminder(contact, appt_dt_0, notify_win,
+    reminder_0 = Reminder(contact_0, appt_dt_0, notify_win,
                           location, participant_0)
     appt_str_time_1 = '2020-01-01T13:00+00:00'
     appt_dt_1 = arrow.get(appt_str_time_1, "YYYY-MM-DDTHH:mmZ")
     participant_1 = 'Dr John'
-    reminder_1 = Reminder(contact, appt_dt_1, notify_win,
+    contact_1 = '12223339999'
+    reminder_1 = Reminder(contact_1, appt_dt_1, notify_win,
                           location, participant_1)
     db_session.add(reminder_0)
     db_session.add(reminder_1)

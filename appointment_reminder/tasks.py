@@ -7,7 +7,7 @@ from FlowrouteMessagingLib.Models.Message import Message
 
 from appointment_reminder.settings import (
     FLOWROUTE_ACCESS_KEY, FLOWROUTE_SECRET_KEY, FLOWROUTE_NUMBER,
-    MSG_TEMPLATE, ORG_NAME, DT_LOCALE)
+    MSG_TEMPLATE, ORG_NAME)
 from appointment_reminder.models import Reminder
 from appointment_reminder.log import log
 from appointment_reminder.service import reminder_app

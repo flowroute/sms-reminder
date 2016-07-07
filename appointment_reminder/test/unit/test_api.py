@@ -12,6 +12,7 @@ from appointment_reminder.service import reminder_app as app
 
 def teardown_module(module):
     if TEST_DB in app.config['SQLALCHEMY_DATABASE_URI']:
+        db_session.rollback()
         Reminder.query.delete()
         db_session.commit()
     else:
@@ -21,6 +22,7 @@ def teardown_module(module):
 
 def setup_function(function):
     if TEST_DB in app.config['SQLALCHEMY_DATABASE_URI']:
+        db_session.rollback()
         Reminder.query.delete()
         db_session.commit()
     else:
@@ -57,16 +59,17 @@ def new_appointment():
 
 @pytest.fixture
 def new_appointments(new_appointment):
-    contact = '12223334444'
+    contact_0 = '12223334444'
     appt_str_time_0 = '2016-01-01T13:00+0700'
     notify_win = 24
     location = 'Family Physicians'
     participant_0 = 'Dr Smith'
-    reminder_0 = Reminder(contact, arrow.get(appt_str_time_0), notify_win,
+    reminder_0 = Reminder(contact_0, arrow.get(appt_str_time_0), notify_win,
                           location, participant_0)
     appt_str_time_1 = '2020-01-01T13:00+0000'
     participant_1 = 'Dr Martinez'
-    reminder_1 = Reminder(contact, arrow.get(appt_str_time_1), notify_win,
+    contact_1 = '12223335555'
+    reminder_1 = Reminder(contact_1, arrow.get(appt_str_time_1), notify_win,
                           location, participant_1)
     db_session.add(reminder_0)
     db_session.add(new_appointment)
@@ -91,6 +94,22 @@ def test_add_reminder_success(mock_send_reminder, appointment_details):
     reminder = Reminder.query.one()
     assert reminder.id == reminder_id
     assert call_args[1]['eta'] == notify_dt
+
+
+@mock.patch('appointment_reminder.api.send_reminder')
+def test_add_reminder_unique_constraint(mock_send_reminder, new_appointment,
+                                        appointment_details):
+    client = app.test_client()
+    db_session.add(new_appointment)
+    db_session.commit()
+    dup_num = new_appointment.contact_num
+    appointment_details['contact_number'] = dup_num
+    resp = client.post('/reminder', data=json.dumps(appointment_details),
+                       content_type='application/json')
+    data = json.loads(resp.data)
+    assert data['message'] == ("unable to create a new reminder. duplicate "
+                               "contact_number {}".format(dup_num))
+    assert resp.status_code == 400
 
 
 def test_get_reminders_success(new_appointments):
