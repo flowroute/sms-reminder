@@ -11,9 +11,6 @@ from appointment_reminder.tasks import send_reminder
 from appointment_reminder.database import db_session
 from appointment_reminder.models import Reminder
 from appointment_reminder import app
-# TODO add logging
-# TODO add tz support
-# TODO is grabbing the newest reminder for a given customer good enough? Send a code with it?
 
 
 @app.teardown_appcontext
@@ -56,9 +53,8 @@ def add_reminder():
     db_session.add(reminder)
     db_session.commit()
     send_reminder.apply_async(args=[reminder.id], eta=reminder.notify_dt)
-    content = json.dumps({"message": ("successfully created new reminder, "
-                          "and scheduled a SMS reminder."),
-                          "appointment_id": reminder.id})
+    msg = "successfully created a new reminder with id {}".format(reminder.id)
+    content = json.dumps({"message": msg, "reminder_id": reminder.id})
     return Response(content, content_type="application/json")
 
 
@@ -79,6 +75,7 @@ def get_reminder(reminder_id):
     try:
         rm = Reminder.query.filter_by(id=reminder_id).one()
     except NoResultFound:
+        log.info({"message": "no reminder with id {}".format(reminder_id)})
         return Response(
             response=json.dumps({"message": "unknown reminder id"}),
             status_code=404, content_type='application/json')
@@ -98,16 +95,18 @@ def remove_reminder(reminder_id):
     try:
         reminder = Reminder.query.filter_by(id=reminder_id).one()
     except NoResultFound:
+        log.info({"message": "no reminder with id {}".format(reminder_id)})
         return Response(
             response=json.dumps({"message": "unknown reminder id"}),
             status_code=404, content_type='application/json')
     else:
         db_session.delete(reminder)
         db_session.commit()
-        msg = {"message":
-               "successfully deleted reminder {}".format(reminder_id)}
-        return Response(response=json.dumps(msg), status=200,
-                        content_type='application/json')
+        msg = "successfully deleted reminder with id {}".format(reminder_id)
+        log.info({"message": msg})
+        return Response(
+            response=json.dumps({"message": msg, "reminder_id": reminder_id}),
+            status=200, content_type='application/json')
 
 
 @app.route("/", methods=['POST'])
@@ -117,7 +116,7 @@ def inbound_handler():
     Flowroute's messaging service.
     """
     body = request.json
-    # Take the time to clear out any historical appointments.
+    # Take the time to clear out any past reminders
     Reminder.clean_expired()
     try:
         virtual_tn = body['to']
@@ -135,8 +134,7 @@ def inbound_handler():
         except NoResultFound:
             msg = "no existing un-responded reminder for contact {}".format(
                 sms_from)
-            log.info({"message": msg,
-                      "status": "succeeded"})
+            log.info({"message": msg})
         message = body['body'].upper()
         if 'YES' in message:
             appt.has_confirmed = True

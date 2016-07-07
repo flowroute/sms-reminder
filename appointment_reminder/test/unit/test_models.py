@@ -1,6 +1,7 @@
 import pytest
 import arrow
 
+from sqlalchemy.exc import IntegrityError
 from appointment_reminder.service import reminder_app as app
 from appointment_reminder.models import Reminder
 from appointment_reminder.database import db_session
@@ -34,12 +35,32 @@ def test_reminder_init():
     participant = 'Dr Smith'
     reminder = Reminder(contact, appt_dt, notify_win,
                         location, participant)
+    db_session.add(reminder)
+    db_session.commit()
     assert reminder.contact_num == contact
     assert reminder.id is not None
     assert reminder.appt_user_dt == appt_dt
     assert reminder.appt_sys_dt == appt_dt.to('utc')
     assert reminder.location == location
     assert reminder.participant == participant
+
+
+def test_reminder_honors_uniqueness():
+    contact = '12223334445'
+    appt_str_time = '2016-01-01T13:00+00:00'
+    appt_dt = arrow.get(appt_str_time, "YYYY-MM-DDTHH:mmZ")
+    notify_win = 24
+    location = 'Family Physicians'
+    participant = 'Dr Smith'
+    reminder0 = Reminder(contact, appt_dt, notify_win,
+                         location, participant)
+    db_session.add(reminder0)
+    db_session.commit()
+    reminder1 = Reminder(contact, appt_dt, notify_win,
+                         location, participant)
+    db_session.add(reminder1)
+    with pytest.raises(IntegrityError):
+        db_session.commit()
 
 
 def test_clean_expired():

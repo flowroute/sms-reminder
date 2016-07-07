@@ -93,16 +93,6 @@ def test_add_reminder_success(mock_send_reminder, appointment_details):
     assert call_args[1]['eta'] == notify_dt
 
 
-# TODO the model doesn't enforce the unique constraint on contact num
-@mock.patch('appointment_reminder.api.send_reminder')
-def test_add_reminder_fails_on_more_than_one(mock_send_reminder, appointment_details):
-    client = app.test_client()
-    resp = client.post('/reminder', data=json.dumps(appointment_details),
-                       content_type='application/json')
-    assert resp.status_code == 200
-    assert mock_send_reminder.apply_async.called == 1
-
-
 def test_get_reminders_success(new_appointments):
     client = app.test_client()
     resp = client.get('/reminder')

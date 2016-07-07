@@ -47,14 +47,14 @@ def create_message_body(appt):
 
 
 @celery.task()
-def send_reminder(appt_id):
+def send_reminder(reminder_id):
     """
     """
     try:
-        appt = Reminder.query.filter_by(id=appt_id).one()
+        appt = Reminder.query.filter_by(id=reminder_id).one()
     except NoResultFound:
-        log.error({"message": "Received unknown appointment id.",
-                   "status": "failed"})
+        log.error({"message": "Received unknown appointment id {}.".format(
+            reminder_id), "reminder_id": reminder_id})
         return
     msg_body = create_message_body(appt)
     message = Message(
@@ -66,11 +66,9 @@ def send_reminder(appt_id):
     except Exception as e:
         strerr = vars(e).get('response_body', None)
         log.critical({"message": "Raised an exception sending SMS",
-                      "status": "failed",
-                      "exc": e,
-                      "strerr": strerr})
+                      "exc": e, "strerr": strerr, "reminder_id": reminder_id})
     else:
         log.info(
             {"message": "Message sent to {} for reminder {}".format(
-             appt.contact_num, appt_id),
-             "status": "succeeded"})
+             appt.contact_num, reminder_id),
+             "reminder_id": reminder_id})

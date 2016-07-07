@@ -6,8 +6,6 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from database import Base, db_session
 
-from log import log
-
 
 class Reminder(Base):
     """
