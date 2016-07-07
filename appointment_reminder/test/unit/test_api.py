@@ -1,7 +1,7 @@
 import pytest
 import json
 import mock
-import pendulum
+import arrow
 from sqlalchemy.orm.exc import NoResultFound
 
 from appointment_reminder.settings import TEST_DB
@@ -28,13 +28,14 @@ def setup_function(function):
                               "Flip settings.DEBUG to True"))
 
 REMINDER_FIELDS = ('contact_number', 'participant', 'reminder_id',
-                   'appt_datetime', 'location', 'has_confirmed', 'notify_at')
+                   'appt_user_dt', 'appt_sys_dt', 'location', 'has_confirmed',
+                   'notify_at')
 
 
 @pytest.fixture
 def appointment_details():
     content = {'contact_number': '12223334444',
-               'appointment_time': '2020-01-01T13:00:00+0300',
+               'appointment_time': '2020-01-01T13:00+0300',
                'notify_window': '24',
                'location': 'Flowroute',
                'participant': 'Casey',
@@ -45,11 +46,11 @@ def appointment_details():
 @pytest.fixture
 def new_appointment():
     contact = '1222333555'
-    appt_str_time_0 = '2030-01-01T13:00:00+0000'
+    appt_str_time_0 = '2030-01-01T13:00+0000'
     notify_win = 24
     location = 'Flowroute HQ'
     participant_0 = 'Development Teams'
-    reminder = Reminder(contact, appt_str_time_0, notify_win,
+    reminder = Reminder(contact, arrow.get(appt_str_time_0), notify_win,
                         location, participant_0)
     return reminder
 
@@ -57,19 +58,20 @@ def new_appointment():
 @pytest.fixture
 def new_appointments(new_appointment):
     contact = '12223334444'
-    appt_str_time_0 = '2016-01-01T13:00:00+0700'
+    appt_str_time_0 = '2016-01-01T13:00+0700'
     notify_win = 24
     location = 'Family Physicians'
     participant_0 = 'Dr Smith'
-    reminder_0 = Reminder(contact, appt_str_time_0, notify_win,
+    reminder_0 = Reminder(contact, arrow.get(appt_str_time_0), notify_win,
                           location, participant_0)
-    appt_str_time_1 = '2020-01-01T13:00:00+0000'
+    appt_str_time_1 = '2020-01-01T13:00+0000'
     participant_1 = 'Dr Martinez'
-    reminder_1 = Reminder(contact, appt_str_time_1, notify_win,
+    reminder_1 = Reminder(contact, arrow.get(appt_str_time_1), notify_win,
                           location, participant_1)
     db_session.add(reminder_0)
-    db_session.add(reminder_1)
     db_session.add(new_appointment)
+    db_session.commit()
+    db_session.add(reminder_1)
     db_session.commit()
     return [reminder_0, reminder_1, new_appointment]
 
@@ -83,12 +85,22 @@ def test_add_reminder_success(mock_send_reminder, appointment_details):
     assert mock_send_reminder.apply_async.called == 1
     call_args = mock_send_reminder.apply_async.call_args
     reminder_time = appointment_details['appointment_time']
-    dt = pendulum.Pendulum.strptime(reminder_time, '%Y-%m-%dT%H:%M:%S%z')
-    notify_dt = dt - timedelta(hours=int(appointment_details['notify_window']))
+    dt = arrow.get(reminder_time, "YYYY-MM-DDTHH:mmZ")
+    notify_dt = dt.replace(hours=-int(appointment_details['notify_window']))
     reminder_id = call_args[1]['args'][0]
     reminder = Reminder.query.one()
     assert reminder.id == reminder_id
     assert call_args[1]['eta'] == notify_dt
+
+
+# TODO the model doesn't enforce the unique constraint on contact num
+@mock.patch('appointment_reminder.api.send_reminder')
+def test_add_reminder_fails_on_more_than_one(mock_send_reminder, appointment_details):
+    client = app.test_client()
+    resp = client.post('/reminder', data=json.dumps(appointment_details),
+                       content_type='application/json')
+    assert resp.status_code == 200
+    assert mock_send_reminder.apply_async.called == 1
 
 
 def test_get_reminders_success(new_appointments):

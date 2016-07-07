@@ -42,7 +42,7 @@ def add_reminder():
     body = request.json
     try:
         contact_num = str(body['contact_number'])
-        appt_dt = arrow.get(body['appointment_time'], "YYY-MM-DDTHH:mmZ")
+        appt_dt = arrow.get(body['appointment_time'], "YYYY-MM-DDTHH:mmZ")
         notify_win = int(body['notify_window'])
         location = body.get('location', None)
         participant = body.get('participant', None)
@@ -51,14 +51,14 @@ def add_reminder():
             ("Required arguments: 'contact_number' (str), "
              "'appointment_time' (str) eg. '2016-01-01T13:00+02:00', "
              "'notify_window' (int)"))
-    appt = Reminder(contact_num, appt_dt, notify_win,
-                    location, participant)
-    db_session.add(appt)
+    reminder = Reminder(contact_num, appt_dt, notify_win,
+                        location, participant)
+    db_session.add(reminder)
     db_session.commit()
-    send_reminder.apply_async(args=[appt.id], eta=appt.notify_dt)
+    send_reminder.apply_async(args=[reminder.id], eta=reminder.notify_dt)
     content = json.dumps({"message": ("successfully created new reminder, "
                           "and scheduled a SMS reminder."),
-                          "appointment_id": appt.id})
+                          "appointment_id": reminder.id})
     return Response(content, content_type="application/json")
 
 
@@ -66,7 +66,8 @@ def add_reminder():
 def get_reminders():
     reminders = Reminder.query.all()
     res = [{'reminder_id': rm.id, 'contact_number': rm.contact_num,
-            'appt_datetime': str(rm.appt_dt), 'notify_at': str(rm.notify_dt),
+            'appt_user_dt': str(rm.appt_user_dt), 'appt_sys_dt':
+            str(rm.appt_sys_dt), 'notify_at': str(rm.notify_dt),
             'has_confirmed': rm.has_confirmed, 'location': rm.location,
             'participant': rm.participant} for rm in reminders]
     return Response(json.dumps({"reminders": res}), status=200,
@@ -83,9 +84,9 @@ def get_reminder(reminder_id):
             status_code=404, content_type='application/json')
     else:
         res = {'reminder_id': rm.id, 'contact_number': rm.contact_num,
-               'appt_datetime': str(rm.appt_dt),
-               'notify_at': str(rm.notify_dt), 'has_confirmed':
-               rm.has_confirmed, 'location': rm.location,
+               'appt_user_dt': str(rm.appt_user_dt), 'appt_sys_dt':
+               str(rm.appt_sys_dt), 'notify_at': str(rm.notify_dt),
+               'has_confirmed': rm.has_confirmed, 'location': rm.location,
                'participant': rm.participant}
         return Response(
             response=json.dumps(res),
@@ -130,8 +131,7 @@ def inbound_handler():
     else:
         try:
             appt = Reminder.query.filter_by(
-                contact_num=sms_from, has_confirmed=None).order_by(
-                desc(Reminder.notify_dt)).one()
+                contact_num=sms_from).one()
         except NoResultFound:
             msg = "no existing un-responded reminder for contact {}".format(
                 sms_from)
@@ -145,4 +145,3 @@ def inbound_handler():
         db_session.add(appt)
         db_session.commit()
     return Response(status=200)
-

@@ -1,5 +1,6 @@
 from sqlalchemy.orm.exc import NoResultFound
 from celery import Celery
+import arrow
 
 from FlowrouteMessagingLib.Controllers.APIController import APIController
 from FlowrouteMessagingLib.Models.Message import Message
@@ -38,7 +39,10 @@ def create_message_body(appt):
         appt_context += ' at {}'.format(appt.location)
     if appt.participant:
         appt_context += ' with {}'.format(appt.participant)
-    msg = MSG_TEMPLATE.format(ORG_NAME, appt.appt_dt.humanize(locale=DT_LOCALE), appt_context)
+    msg = MSG_TEMPLATE.format(
+        ORG_NAME,
+        arrow.get(appt.appt_user_dt).strftime("%A, %b %d %I:%M %p"),
+        appt_context)
     return msg
 
 

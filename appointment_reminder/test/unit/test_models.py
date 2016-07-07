@@ -1,5 +1,5 @@
 import pytest
-from datetime import datetime, timedelta
+import arrow
 
 from appointment_reminder.service import reminder_app as app
 from appointment_reminder.models import Reminder
@@ -27,32 +27,34 @@ def setup_module(module):
 
 def test_reminder_init():
     contact = '12223334444'
-    appt_str_time = '2016-01-01 13:00'
-    appt_dt = datetime.strptime(appt_str_time, '%Y-%m-%d %H:%M')
+    appt_str_time = '2016-01-01T13:00+00:00'
+    appt_dt = arrow.get(appt_str_time, "YYYY-MM-DDTHH:mmZ")
     notify_win = 24
     location = 'Family Physicians'
     participant = 'Dr Smith'
-    reminder = Reminder(contact, appt_str_time, notify_win,
+    reminder = Reminder(contact, appt_dt, notify_win,
                         location, participant)
     assert reminder.contact_num == contact
     assert reminder.id is not None
-    assert reminder.appt_dt == appt_dt
-    assert reminder.notify_dt == appt_dt - timedelta(hours=notify_win)
+    assert reminder.appt_user_dt == appt_dt
+    assert reminder.appt_sys_dt == appt_dt.to('utc')
     assert reminder.location == location
     assert reminder.participant == participant
 
 
 def test_clean_expired():
     contact = '12223334444'
-    appt_str_time_0 = '2016-01-01 13:00'
+    appt_str_time_0 = '2016-01-01T13:00+00:00'
     notify_win = 24
     location = 'Family Physicians'
     participant_0 = 'Dr Smith'
-    reminder_0 = Reminder(contact, appt_str_time_0, notify_win,
+    appt_dt_0 = arrow.get(appt_str_time_0, "YYYY-MM-DDTHH:mmZ")
+    reminder_0 = Reminder(contact, appt_dt_0, notify_win,
                           location, participant_0)
-    appt_str_time_1 = '2020-01-01 13:00'
+    appt_str_time_1 = '2020-01-01T13:00+00:00'
+    appt_dt_1 = arrow.get(appt_str_time_1, "YYYY-MM-DDTHH:mmZ")
     participant_1 = 'Dr John'
-    reminder_1 = Reminder(contact, appt_str_time_1, notify_win,
+    reminder_1 = Reminder(contact, appt_dt_1, notify_win,
                           location, participant_1)
     db_session.add(reminder_0)
     db_session.add(reminder_1)

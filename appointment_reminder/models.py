@@ -1,5 +1,6 @@
 import uuid
 
+import arrow
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -13,10 +14,10 @@ class Reminder(Base):
     """
     @classmethod
     def clean_expired(cls):
-        current_ts = pendulum.utcnow()
+        current_ts = arrow.utcnow().datetime
         try:
             expired_reminders = db_session.query(cls).filter(
-                cls.appt_dt <= current_ts).all()
+                cls.appt_sys_dt <= current_ts).all()
         except NoResultFound:
             return
         else:
@@ -26,17 +27,21 @@ class Reminder(Base):
 
     __tablename__ = "reminder"
     id = Column(String(40), primary_key=True)
-    contact_num = Column(String(18))
-    appt_dt = Column(DateTime)
-    notify_dt = Column(DateTime)
+    contact_num = Column(String(18), unique=True)
+    appt_user_dt = Column(DateTime)
+    appt_sys_dt = Column(DateTime)
+    notify_hrs_before = Column(Integer)
     location = Column(String(128), nullable=True)
     participant = Column(String(256), nullable=True)
     has_confirmed = Column(Boolean, nullable=True, default=None)
 
-    def __init__(self, contact_num, appt_dt, notify_win, location, participant):
+    def __init__(self, contact_num, appt_dt, notify_hrs_before, location,
+                 participant):
         self.id = uuid.uuid4().hex
         self.contact_num = contact_num
-        self.appt_dt = appt_dt
-        self.notify_dt = self.appt_dt.to('utc').replace(hours=-notify_win)
+        self.appt_user_dt = appt_dt.datetime
+        self.appt_sys_dt = appt_dt.to('utc').datetime
+        self.notify_dt = appt_dt.to('utc').replace(
+            hours=-notify_hrs_before).datetime
         self.location = location
         self.participant = participant
