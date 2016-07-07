@@ -147,22 +147,53 @@ def test_delete_reminder_success(new_appointment):
     with pytest.raises(NoResultFound):
         Reminder.query.filter_by(id=reminder_id).one()
 
+@pytest.mark.parametrize("response, status", [
+    ('Yes', True),
+    ('YES', True),
+    ('yes i will be there', True),
+    ('No', False),
+    ('NO', False),
+    ('no i need to cancel', False)
 
-def test_inbound_handler_success(new_appointment):
+])
+def test_inbound_handler_success(new_appointment, response, status):
     appt_id = new_appointment.id
     db_session.add(new_appointment)
     db_session.commit()
     client = app.test_client()
     inbound_req = {'to': 'myflowroutenumber',
                    'from': new_appointment.contact_num,
-                   'body': 'Yes',
+                   'body': response,
                    }
     resp = client.post('/', data=json.dumps(inbound_req),
                        content_type='application/json')
     assert resp.status_code == 200
     appt = Reminder.query.filter_by(id=appt_id).one()
-    assert appt.has_confirmed is True
+    assert appt.has_confirmed is status
 
 
-def test_inbound_handler_expired_appointment(new_appointment):
-    pass
+def test_inbound_handler_expired_appointment(appointment_details):
+    contact_0 = '12223333333'
+    contact_1 = '12229991111'
+    appt_str_time_0 = '2000-01-01T13:00+0000'
+    appt_str_time_1 = '2020-01-01T12:00+0000'
+    notify_win = 24
+    location = 'Flowroute HQ'
+    participant_0 = 'Development Teams'
+    reminder_0 = Reminder(contact_0, arrow.get(appt_str_time_0), notify_win,
+                          location, participant_0)
+    reminder_1 = Reminder(contact_1, arrow.get(appt_str_time_1),
+                          notify_win, location, participant_0)
+    db_session.add(reminder_0)
+    db_session.add(reminder_1)
+    db_session.commit()
+    client = app.test_client()
+    inbound_req = {'to': 'myflowroutenumber',
+                   'from': reminder_1.contact_num,
+                   'body': 'Yes'}
+    resp = client.post('/', data=json.dumps(inbound_req),
+                       content_type='application/json')
+    reminders = Reminder.query.all()
+    assert len(reminders) == 1
+    reminders[0].contact_num == contact_1
+    assert resp.status_code == 200

@@ -148,11 +148,13 @@ def inbound_handler():
             msg = "no existing un-responded reminder for contact {}".format(
                 sms_from)
             log.info({"message": msg})
-        message = body['body'].upper()
-        if 'YES' in message:
-            appt.has_confirmed = True
-        elif 'NO' in message:
-            appt.has_confirmed = False
-        db_session.add(appt)
-        db_session.commit()
-    return Response(status=200)
+        else:
+            message = body['body'].upper()
+            if 'YES' in message:
+                appt.has_confirmed = True
+            elif 'NO' in message:
+                appt.has_confirmed = False
+            db_session.add(appt)
+            db_session.commit()
+        finally:
+            return Response(status=200)
