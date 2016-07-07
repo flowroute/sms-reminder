@@ -1,13 +1,15 @@
+version: '2'
+
 services:
   redis:
     image: 'redis:3.0-alpine'
-    command: 'redis-server'
+    command: redis-server
     volumes:
       - 'redis:/var/lib/redis/data'
     ports:
-      -'6379:6379'
+      - '6379:6379'
 
-  reminder_api:
+  api:
     build: .
     command: serve
     ports:
@@ -16,3 +18,8 @@ services:
   celery:
     build: .
     command: celery_worker
+    links:
+      - redis
+
+volumes:
+  redis:

@@ -1,5 +1,5 @@
 amqp==2.0.1
-arrow=0.8.0
+arrow==0.8.0
 anyjson==0.3.3
 billiard==3.3.0.23
 celery==3.1.23

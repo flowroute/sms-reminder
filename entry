@@ -19,6 +19,7 @@ fi
 
 if [ "$1" = "celery_worker" ]; then
     shift
+    export C_FORCE_ROOT=1
     CMD="/app/ve/bin/celery worker -A appointment_reminder.tasks.celery $@"
 fi
 

@@ -14,9 +14,9 @@ TEST_DB = "test_appt_reminder.db"
 DB = "appt_reminder.db"
 
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL',
-                                   'redis://localhost:6379')
+                                   'redis://redis:6379')
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND',
-                                       'redis://localhost:6379')
+                                       'redis://redis:6379')
 CELERY_ENABLE_UTC = True
 
 MSG_TEMPLATE = ("[{}] You have an appointment on {}{}. "  # company, datetime, additional details

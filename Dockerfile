@@ -15,8 +15,6 @@ RUN mkdir -p /app/$APP \
 # Don't copy the whole app yet, as that invalidates the cache for further
 # layers.  As long as these files don't change, the following layers with pip
 # install can be cached...
-# Note:  We're not copying in the .git files, so version.txt is what vcversioner
-# is going to want to see.
 COPY setup.py requirements.txt /app/
 
 # apk allows bundling a virtual package to uninstall, to cleanup the image.
@@ -49,4 +47,3 @@ RUN apk --update add --virtual build-deps \
 COPY . /app
 ENTRYPOINT ["/app/entry"]
 CMD ["serve"]
-
