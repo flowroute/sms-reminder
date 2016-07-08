@@ -58,16 +58,14 @@ def add_reminder():
         msg = ("unable to create a new reminder. duplicate "
                "contact_number {}".format(contact_num))
         log.error({"message": msg})
-        content = json.dumps({"message": msg})
-        status = 400
+        return Response(json.dumps({"message": msg}), status=400,
+                        content_type="application/json")
     else:
         send_reminder.apply_async(args=[reminder.id], eta=reminder.notify_dt)
         msg = "successfully created a reminder with id {}".format(reminder.id)
         log.info({"message": msg})
         content = json.dumps({"message": msg, "reminder_id": reminder.id})
-        status = 200
-    finally:
-        return Response(content, status=status,
+        return Response(content, status=200,
                         content_type="application/json")
 
 

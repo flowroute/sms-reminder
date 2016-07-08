@@ -10,7 +10,7 @@ from appointment_reminder.models import Reminder
 from appointment_reminder.service import reminder_app as app
 
 
-def teardown_module(module):
+def teardown_module(function):
     if TEST_DB in app.config['SQLALCHEMY_DATABASE_URI']:
         db_session.rollback()
         Reminder.query.delete()
@@ -93,7 +93,7 @@ def test_add_reminder_success(mock_send_reminder, appointment_details):
     reminder_id = call_args[1]['args'][0]
     reminder = Reminder.query.one()
     assert reminder.id == reminder_id
-    assert call_args[1]['eta'] == notify_dt
+    assert arrow.get(call_args[1]['eta']) == notify_dt
 
 
 @mock.patch('appointment_reminder.api.send_reminder')

@@ -1,17 +1,20 @@
 import os
 
-DEBUG_MODE = True
+# Turn this to False when in production
+DEBUG_MODE = False
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-FLOWROUTE_SECRET_KEY = os.environ.get('FLOWROUTE_SECRET_KEY', None)
-FLOWROUTE_ACCESS_KEY = os.environ.get('FLOWROUTE_ACCESS_KEY', None)
-FLOWROUTE_NUMBER = os.environ.get('FLOWROUTE_NUMBER', None)
+
+FLOWROUTE_SECRET_KEY = os.environ['FLOWROUTE_SECRET_KEY']
+FLOWROUTE_ACCESS_KEY = os.environ['FLOWROUTE_ACCESS_KEY']
+FLOWROUTE_NUMBER = os.environ['FLOWROUTE_NUMBER']
+
 
 ORG_NAME = os.environ.get('ORG_NAME', 'Your Org Name')
 
 
 TEST_DB = "sqlite:///test_appt_reminder.db"
-DB = "sqlite:////var/lib/sqlite/data/appt_reminder.db"
+DB = "sqlite:////var/lib/sqlite/appt_reminder.db"
 
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL',
                                    'redis://redis:6379')

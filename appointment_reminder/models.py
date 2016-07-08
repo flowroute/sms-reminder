@@ -1,7 +1,7 @@
 import uuid
 
 import arrow
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy import Column, String, DateTime, Boolean
 from sqlalchemy.orm.exc import NoResultFound
 
 from database import Base, db_session
@@ -28,7 +28,7 @@ class Reminder(Base):
     contact_num = Column(String(18), unique=True)
     appt_user_dt = Column(DateTime)
     appt_sys_dt = Column(DateTime)
-    notify_hrs_before = Column(Integer)
+    notify_dt = Column(DateTime)
     location = Column(String(128), nullable=True)
     participant = Column(String(256), nullable=True)
     sms_sent = Column(Boolean, nullable=False, default=False)

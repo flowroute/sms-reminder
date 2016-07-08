@@ -5,8 +5,7 @@ services:
     image: 'redis:3.0-alpine'
     command: redis-server
     volumes:
-      - 'redis:/var/lib/redis/data'
-      - 'sqlite:/var/lib/sqlite/data'
+      - redis:/var/lib/redis/data
     ports:
       - '6379:6379'
 
@@ -16,13 +15,17 @@ services:
     ports:
       - '8000:8000'
     volumes:
-      - 'sqlite:/var/lib/sqlite/data'
+      - sqlite:/var/lib/sqlite
+    env_file: ./env
 
   celery:
     build: .
     command: celery_worker
+    volumes:
+      - sqlite:/var/lib/sqlite
     links:
       - redis
+    env_file: ./env
 
 volumes:
   redis:
