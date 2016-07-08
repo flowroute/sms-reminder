@@ -31,7 +31,7 @@ def setup_function(function):
 
 REMINDER_FIELDS = ('contact_number', 'participant', 'reminder_id',
                    'appt_user_dt', 'appt_sys_dt', 'location', 'has_confirmed',
-                   'notify_at')
+                   'notify_at', 'sms_sent')
 
 
 @pytest.fixture
