@@ -5,12 +5,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from appointment_reminder.settings import DB, TEST_DB, DEBUG_MODE
 
 if DEBUG_MODE:
-    engine = create_engine(
-        'sqlite:////var/lib/sqlite/data/tmp/{}'.format(TEST_DB),
-        convert_unicode=True)
+    engine = create_engine(TEST_DB, convert_unicode=True)
 else:
-    engine = create_engine('sqlite:////var/lib/sqlite/data/{}'.format(DB),
-                           convert_unicode=True)
+    engine = create_engine(DB, convert_unicode=True)
 
 db_session = scoped_session(
     sessionmaker(autocommit=False, autoflush=False, bind=engine))

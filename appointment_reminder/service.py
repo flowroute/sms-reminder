@@ -8,9 +8,9 @@ from appointment_reminder import app
 def configure_app(app=app):
     if DEBUG_MODE:
         app.debug = DEBUG_MODE
-        app.config.update(SQLALCHEMY_DATABASE_URI='sqlite:///' + TEST_DB)
+        app.config.update(SQLALCHEMY_DATABASE_URI=TEST_DB)
     else:
-        app.config.update(SQLALCHEMY_DATABASE_URI='sqlite:///' + DB)
+        app.config.update(SQLALCHEMY_DATABASE_URI=DB)
     init_db()
     return app
 

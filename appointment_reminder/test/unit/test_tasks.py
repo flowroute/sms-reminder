@@ -43,9 +43,12 @@ def new_reminder():
 
 @mock.patch('appointment_reminder.tasks.sms_controller')
 def test_send_reminder(mock_sms_controller, new_reminder):
-    send_reminder(new_reminder.id)
+    reminder_id = new_reminder.id
+    send_reminder(reminder_id)
     assert mock_sms_controller.create_message.called == 1
     msg = mock_sms_controller.create_message.call_args[0][0].content
     assert msg == ("[Your Org Name] You have an appointment on Monday, Mar 23 "
                    "12:00 PM at Central Park with NY Running Club. Please "
                    "reply 'Yes' to confirm, or 'No' to cancel.")
+    reminder = Reminder.query.filter_by(id=reminder_id).one()
+    assert reminder.sms_sent is True

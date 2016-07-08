@@ -9,6 +9,7 @@ from appointment_reminder.settings import (
     FLOWROUTE_ACCESS_KEY, FLOWROUTE_SECRET_KEY, FLOWROUTE_NUMBER,
     MSG_TEMPLATE, ORG_NAME)
 from appointment_reminder.models import Reminder
+from appointment_reminder.database import db_session
 from appointment_reminder.log import log
 from appointment_reminder.service import reminder_app
 
@@ -73,3 +74,6 @@ def send_reminder(reminder_id):
             {"message": "Message sent to {} for reminder {}".format(
              appt.contact_num, reminder_id),
              "reminder_id": reminder_id})
+        appt.sms_sent = True
+        db_session.add(appt)
+        db_session.commit()

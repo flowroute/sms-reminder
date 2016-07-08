@@ -31,6 +31,7 @@ class Reminder(Base):
     notify_hrs_before = Column(Integer)
     location = Column(String(128), nullable=True)
     participant = Column(String(256), nullable=True)
+    sms_sent = Column(Boolean, nullable=False, default=False)
     has_confirmed = Column(Boolean, nullable=True, default=None)
 
     def __init__(self, contact_num, appt_dt, notify_hrs_before, location,
