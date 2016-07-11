@@ -1,7 +1,9 @@
 import os
 
 # Turn this to False when in production
-DEBUG_MODE = False
+DEBUG_MODE = os.environ.get('DEBUG_MODE', False)
+# Default to INFO log level
+LOG_LEVEL = os.environ.get('LOG_LEVEL', os.environ.get('LOG_LEVEL', 'INFO'))
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 

@@ -5,6 +5,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import IntegrityError
 import arrow
 from arrow.parser import ParserError
+from redis.exceptions import ConnectionError
 
 from appointment_reminder.log import log
 from appointment_reminder.tasks import send_reminder
@@ -49,6 +50,7 @@ def add_reminder():
              "'appointment_time' (str) eg. '2016-01-01T13:00+02:00', "
              "'notify_window' (int)"))
     else:
+        Reminder.clean_expired()
         reminder = Reminder(contact_num, appt_dt, notify_win,
                             location, participant)
         db_session.add(reminder)
@@ -61,7 +63,20 @@ def add_reminder():
         return Response(json.dumps({"message": msg}), status=400,
                         content_type="application/json")
     else:
-        send_reminder.apply_async(args=[reminder.id], eta=reminder.notify_dt)
+        try:
+            send_reminder.apply_async(args=[reminder.id],
+                                      eta=reminder.notify_sys_dt)
+        except ConnectionError as e:
+            log.critical({"message": "unable to connect to redis",
+                          "exc": type(e)})
+            db_session.delete(reminder)
+            db_session.commit()
+            return Response(json.dumps(
+                {"message": ("unable to create a new reminder."
+                             " redis is unreachable"),
+                 "exc": "RedisConnectionError"}),
+                status=500, content_type="application/json")
+
         msg = "successfully created a reminder with id {}".format(reminder.id)
         log.info({"message": msg})
         content = json.dumps({"message": msg, "reminder_id": reminder.id})
@@ -74,8 +89,8 @@ def get_reminders():
     reminders = Reminder.query.all()
     res = [{'reminder_id': rm.id, 'contact_number': rm.contact_num,
             'appt_user_dt': str(rm.appt_user_dt), 'appt_sys_dt':
-            str(rm.appt_sys_dt), 'notify_at': str(rm.notify_dt),
-            'has_confirmed': rm.has_confirmed, 'location': rm.location,
+            str(rm.appt_sys_dt), 'notify_sys_dt': str(rm.notify_sys_dt),
+            'will_attend': rm.will_attend, 'location': rm.location,
             'participant': rm.participant, 'sms_sent': rm.sms_sent}
            for rm in reminders]
     return Response(json.dumps({"reminders": res}), status=200,
@@ -90,12 +105,12 @@ def get_reminder(reminder_id):
         log.info({"message": "no reminder with id {}".format(reminder_id)})
         return Response(
             response=json.dumps({"message": "unknown reminder id"}),
-            status_code=404, content_type='application/json')
+            status=404, content_type='application/json')
     else:
         res = {'reminder_id': rm.id, 'contact_number': rm.contact_num,
                'appt_user_dt': str(rm.appt_user_dt), 'appt_sys_dt':
-               str(rm.appt_sys_dt), 'notify_at': str(rm.notify_dt),
-               'has_confirmed': rm.has_confirmed, 'location': rm.location,
+               str(rm.appt_sys_dt), 'notify_sys_dt': str(rm.notify_sys_dt),
+               'will_attend': rm.will_attend, 'location': rm.location,
                'participant': rm.participant, 'sms_sent': rm.sms_sent}
         return Response(
             response=json.dumps(res),
@@ -110,7 +125,7 @@ def remove_reminder(reminder_id):
         log.info({"message": "no reminder with id {}".format(reminder_id)})
         return Response(
             response=json.dumps({"message": "unknown reminder id"}),
-            status_code=404, content_type='application/json')
+            code=404, content_type='application/json')
     else:
         db_session.delete(reminder)
         db_session.commit()
@@ -129,7 +144,6 @@ def inbound_handler():
     """
     body = request.json
     # Take the time to clear out any past reminders
-    Reminder.clean_expired()
     try:
         virtual_tn = body['to']
         assert len(virtual_tn) <= 18
@@ -140,6 +154,7 @@ def inbound_handler():
         log.error({"message": msg, "status": "failed", "exc": str(e)})
         return Response('There was an issue parsing your request.', status=400)
     else:
+        Reminder.clean_expired()
         try:
             appt = Reminder.query.filter_by(
                 contact_num=sms_from).one()
@@ -150,10 +165,13 @@ def inbound_handler():
         else:
             message = body['body'].upper()
             if 'YES' in message:
-                appt.has_confirmed = True
+                appt.will_attend = True
             elif 'NO' in message:
-                appt.has_confirmed = False
+                appt.will_attend = False
             db_session.add(appt)
             db_session.commit()
+            log.info({"message": ("successfully recorded response from {} for"
+                                  " appointment {}").format(sms_from, appt.id),
+                      "reminder_id": appt.id})
         finally:
             return Response(status=200)

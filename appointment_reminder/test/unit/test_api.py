@@ -30,8 +30,8 @@ def setup_function(function):
                               "Flip settings.DEBUG to True"))
 
 REMINDER_FIELDS = ('contact_number', 'participant', 'reminder_id',
-                   'appt_user_dt', 'appt_sys_dt', 'location', 'has_confirmed',
-                   'notify_at', 'sms_sent')
+                   'appt_user_dt', 'appt_sys_dt', 'location', 'will_attend',
+                   'notify_sys_dt', 'sms_sent')
 
 
 @pytest.fixture
@@ -89,11 +89,12 @@ def test_add_reminder_success(mock_send_reminder, appointment_details):
     call_args = mock_send_reminder.apply_async.call_args
     reminder_time = appointment_details['appointment_time']
     dt = arrow.get(reminder_time, "YYYY-MM-DDTHH:mmZ")
-    notify_dt = dt.replace(hours=-int(appointment_details['notify_window']))
+    notify_sys_dt = dt.replace(hours=-int(
+        appointment_details['notify_window']))
     reminder_id = call_args[1]['args'][0]
     reminder = Reminder.query.one()
     assert reminder.id == reminder_id
-    assert arrow.get(call_args[1]['eta']) == notify_dt
+    assert arrow.get(call_args[1]['eta']) == notify_sys_dt
 
 
 @mock.patch('appointment_reminder.api.send_reminder')
@@ -169,7 +170,7 @@ def test_inbound_handler_success(new_appointment, response, status):
                        content_type='application/json')
     assert resp.status_code == 200
     appt = Reminder.query.filter_by(id=appt_id).one()
-    assert appt.has_confirmed is status
+    assert appt.will_attend is status
 
 
 def test_inbound_handler_expired_appointment(appointment_details):

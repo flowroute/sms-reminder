@@ -28,11 +28,11 @@ class Reminder(Base):
     contact_num = Column(String(18), unique=True)
     appt_user_dt = Column(DateTime)
     appt_sys_dt = Column(DateTime)
-    notify_dt = Column(DateTime)
+    notify_sys_dt = Column(DateTime)
     location = Column(String(128), nullable=True)
     participant = Column(String(256), nullable=True)
     sms_sent = Column(Boolean, nullable=False, default=False)
-    has_confirmed = Column(Boolean, nullable=True, default=None)
+    will_attend = Column(Boolean, nullable=True, default=None)
 
     def __init__(self, contact_num, appt_dt, notify_hrs_before, location,
                  participant):
@@ -40,7 +40,7 @@ class Reminder(Base):
         self.contact_num = contact_num
         self.appt_user_dt = appt_dt.datetime
         self.appt_sys_dt = appt_dt.to('utc').datetime
-        self.notify_dt = appt_dt.to('utc').replace(
+        self.notify_sys_dt = appt_dt.to('utc').replace(
             hours=-notify_hrs_before).datetime
         self.location = location
         self.participant = participant
