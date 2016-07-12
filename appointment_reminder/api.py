@@ -37,6 +37,21 @@ class InvalidAPIUsage(Exception):
 
 @app.route('/reminder', methods=['POST'])
 def add_reminder():
+    """
+    Adds a new reminder, and schedules an sms message handling celery task.
+    If the redis is unavailable and unable to schedule a task the reminder
+    is removed and an internal error is raised, otherwise the new reminder
+    id is returned.
+
+    Required:
+    contact_number : string (The users phone number)
+    appointment_time : string (The datetime of the appointment) "YYYY-MM-DDTHH:mmZ"
+    notify_window : integer (The hours before the appointment to send reminder)
+
+    Optional:
+    location : string (Where the appointment is)
+    participant : string (Who the appoinment is with)
+    """
     body = request.json
     try:
         contact_num = str(body['contact_number'])
@@ -86,6 +101,9 @@ def add_reminder():
 
 @app.route('/reminder', methods=['GET'])
 def get_reminders():
+    """
+    Retrieves a list of all reminders
+    """
     reminders = Reminder.query.all()
     res = [{'reminder_id': rm.id, 'contact_number': rm.contact_num,
             'appt_user_dt': str(rm.appt_user_dt), 'appt_sys_dt':
@@ -99,6 +117,9 @@ def get_reminders():
 
 @app.route('/reminder/<reminder_id>', methods=['GET'])
 def get_reminder(reminder_id):
+    """
+    Retrieves a specific reminder by id
+    """
     try:
         rm = Reminder.query.filter_by(id=reminder_id).one()
     except NoResultFound:
@@ -119,6 +140,9 @@ def get_reminder(reminder_id):
 
 @app.route('/reminder/<reminder_id>', methods=['DELETE'])
 def remove_reminder(reminder_id):
+    """
+    The deletion route for Reminders - takes a reminder_id as an argument
+    """
     try:
         reminder = Reminder.query.filter_by(id=reminder_id).one()
     except NoResultFound:
@@ -141,6 +165,12 @@ def inbound_handler():
     """
     The inbound request handler for consuming HTTP wrapped SMS content from
     Flowroute's messaging service.
+
+    Validates proper message content, and takes time to clear the expired
+    reminders before continuing. Retrieves the reminder based on the
+    sender, and marks the 'will_attend' attribute according to whether
+    there is 'yes' or 'no' (case insensitive) anywhere in the message.
+    Responds to the user with a confirmation message and returns 200.
     """
     body = request.json
     # Take the time to clear out any past reminders
@@ -173,5 +203,6 @@ def inbound_handler():
             log.info({"message": ("successfully recorded response from {} for"
                                   " appointment {}").format(sms_from, appt.id),
                       "reminder_id": appt.id})
+
         finally:
             return Response(status=200)
