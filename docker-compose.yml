@@ -1,32 +1,30 @@
-version: '2'
-
-services:
-  redis:
-    image: 'redis:3.0-alpine'
-    command: redis-server
-    volumes:
-      - redis:/var/lib/redis/data
-    ports:
-      - '6379:6379'
-
-  api:
-    build: .
-    command: serve
-    ports:
-      - '8000:8000'
-    volumes:
-      - sqlite:/var/lib/sqlite
-    env_file: ./env
-
-  celery:
-    build: .
-    command: celery_worker
-    volumes:
-      - sqlite:/var/lib/sqlite
-    links:
-      - redis
-    env_file: ./env
-
-volumes:
-  redis:
-  sqlite:
+redis:
+  mem_limit: 128000000
+  image: redis:3.0-alpine
+  command: redis-server
+  volumes:
+    - /var/lib/redis/data:/var/lib/redis/data
+  ports:
+    - 6379
+api:
+  mem_limit: 256000000
+  build: .
+  command: serve
+  links:
+    - redis
+  ports:
+    - 8000:8000
+  volumes:
+     - /var/lib/sqlite/data:/var/lib/sqlite/data
+  environment:
+    LOG_LEVEL: INFO
+celery:
+  mem_limit: 256000000
+  build: .
+  command: celery_worker
+  volumes:
+    - /var/lib/sqlite/data:/var/lib/sqlite/data
+  links:
+    - redis
+  environment:
+    LOG_LEVEL: INFO
