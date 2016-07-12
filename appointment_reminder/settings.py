@@ -29,6 +29,6 @@ MSG_TEMPLATE = ("[{}] You have an appointment on {{}}{{}}. "  # company, datetim
                 "to cancel.").format(ORG_NAME)
 CONFIRMATION_RESPONSE = ("[{}] Thank you! Your response has been "
                          "recorded.").format(ORG_NAME)
-UNPARSABLE_RESPONSE = ("[{}] Sorry, we were unable to parse your response."
+UNPARSABLE_RESPONSE = ("[{}] Sorry, we were unable to parse your response. "
                        "Please reply 'Yes' to confirm, or 'No' "
                        "to cancel.").format(ORG_NAME)
