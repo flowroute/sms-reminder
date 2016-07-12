@@ -7,7 +7,7 @@ from FlowrouteMessagingLib.Models.Message import Message
 
 from appointment_reminder.settings import (
     FLOWROUTE_ACCESS_KEY, FLOWROUTE_SECRET_KEY, FLOWROUTE_NUMBER,
-    MSG_TEMPLATE, ORG_NAME)
+    MSG_TEMPLATE, CONFIRMATION_RESPONSE, UNPARSABLE_RESPONSE)
 from appointment_reminder.models import Reminder
 from appointment_reminder.database import db_session
 from appointment_reminder.log import log
@@ -41,7 +41,6 @@ def create_message_body(appt):
     if appt.participant:
         appt_context += ' with {}'.format(appt.participant)
     msg = MSG_TEMPLATE.format(
-        ORG_NAME,
         arrow.get(appt.appt_user_dt).strftime("%A, %b %d %I:%M %p"),
         appt_context)
     return msg
@@ -69,11 +68,46 @@ def send_reminder(reminder_id):
         strerr = vars(e).get('response_body', None)
         log.critical({"message": "Raised an exception sending SMS",
                       "exc": e, "strerr": strerr, "reminder_id": reminder_id})
+        raise e
     else:
         log.info(
-            {"message": "Message sent to {} for reminder {}".format(
+            {"message": "Reminder sent to {} for reminder_id {}".format(
              appt.contact_num, reminder_id),
              "reminder_id": reminder_id})
         appt.sms_sent = True
+        db_session.add(appt)
+        db_session.commit()
+
+
+@celery.task()
+def send_reply(reminder_id, confirm=True):
+    try:
+        appt = Reminder.query.filter_by(id=reminder_id).one()
+    except NoResultFound:
+        log.error(
+            {"message": "Received unknown appointment with id {}.".format(
+             reminder_id), "reminder_id": reminder_id})
+        return
+    if confirm:
+        msg_content = CONFIRMATION_RESPONSE
+    else:
+        msg_content = UNPARSABLE_RESPONSE
+    message = Message(
+        to=appt.contact_num,
+        from_=FLOWROUTE_NUMBER,
+        content=msg_content)
+    try:
+        sms_controller.create_message(message)
+    except Exception as e:
+        strerr = vars(e).get('response_body', None)
+        log.critical({"message": "Raised an exception sending SMS",
+                      "exc": e, "strerr": strerr, "reminder_id": reminder_id})
+        raise e
+    else:
+        log.info(
+            {"message": "Confirmation sent to {} for reminder_id {}".format(
+             appt.contact_num, reminder_id),
+             "reminder_id": reminder_id})
+        appt.confirmation_sent = True
         db_session.add(appt)
         db_session.commit()

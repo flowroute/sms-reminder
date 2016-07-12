@@ -8,7 +8,7 @@ from arrow.parser import ParserError
 from redis.exceptions import ConnectionError
 
 from appointment_reminder.log import log
-from appointment_reminder.tasks import send_reminder
+from appointment_reminder.tasks import send_reminder, send_reply
 from appointment_reminder.database import db_session
 from appointment_reminder.models import Reminder
 from appointment_reminder import app
@@ -149,7 +149,7 @@ def remove_reminder(reminder_id):
         log.info({"message": "no reminder with id {}".format(reminder_id)})
         return Response(
             response=json.dumps({"message": "unknown reminder id"}),
-            code=404, content_type='application/json')
+            status=404, content_type='application/json')
     else:
         db_session.delete(reminder)
         db_session.commit()
@@ -172,15 +172,16 @@ def inbound_handler():
     there is 'yes' or 'no' (case insensitive) anywhere in the message.
     Responds to the user with a confirmation message and returns 200.
     """
-    body = request.json
+    req = request.json
     # Take the time to clear out any past reminders
     try:
-        virtual_tn = body['to']
+        virtual_tn = req['to']
         assert len(virtual_tn) <= 18
-        sms_from = body['from']
+        sms_from = req['from']
         assert len(sms_from) <= 18
+        req['body']
     except (TypeError, KeyError, AssertionError) as e:
-        msg = ("Malformed inbound message: {}".format(body))
+        msg = ("Malformed inbound message: {}".format(req))
         log.error({"message": msg, "status": "failed", "exc": str(e)})
         return Response('There was an issue parsing your request.', status=400)
     else:
@@ -192,17 +193,30 @@ def inbound_handler():
             msg = "no existing un-responded reminder for contact {}".format(
                 sms_from)
             log.info({"message": msg})
+            return Response(status=200)
         else:
-            message = body['body'].upper()
+            message = req['body'].upper()
             if 'YES' in message:
                 appt.will_attend = True
+                confirm = True
             elif 'NO' in message:
                 appt.will_attend = False
+                confirm = True
+            else:
+                confirm = False
             db_session.add(appt)
-            db_session.commit()
-            log.info({"message": ("successfully recorded response from {} for"
-                                  " appointment {}").format(sms_from, appt.id),
-                      "reminder_id": appt.id})
-
-        finally:
-            return Response(status=200)
+            try:
+                send_reply.apply_async((appt.id,), {'confirm': confirm})
+            except ConnectionError as e:
+                log.critical({"message": "unable to connect to redis",
+                              "exc": type(e)})
+                db_session.rollback(appt)
+                return Response(status=500)
+            else:
+                db_session.commit()
+                log.info({"message":
+                          ("successfully recorded response from {}, scheduled "
+                           "SMS confirmation for appointment {}").format(
+                               sms_from, appt.id),
+                          "reminder_id": appt.id})
+                return Response(status=200)

@@ -24,6 +24,11 @@ CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND',
                                        'redis://redis:6379')
 CELERY_ENABLE_UTC = True
 
-MSG_TEMPLATE = ("[{}] You have an appointment on {}{}. "  # company, datetime, additional details
+MSG_TEMPLATE = ("[{}] You have an appointment on {{}}{{}}. "  # company, datetime, additional details
                 "Please reply 'Yes' to confirm, or 'No' "
-                "to cancel.")
+                "to cancel.").format(ORG_NAME)
+CONFIRMATION_RESPONSE = ("[{}] Thank you! Your response has been "
+                         "recorded.").format(ORG_NAME)
+UNPARSABLE_RESPONSE = ("[{}] Sorry, we were unable to parse your response."
+                       "Please reply 'Yes' to confirm, or 'No' "
+                       "to cancel.").format(ORG_NAME)
