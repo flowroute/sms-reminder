@@ -16,7 +16,7 @@ ORG_NAME = os.environ.get('ORG_NAME', 'Your Org Name')
 
 
 TEST_DB = "sqlite:///test_appt_reminder.db"
-DB = "sqlite:////var/lib/sqlite/appt_reminder.db"
+DB = "sqlite:////var/lib/sqlite/data/appt_reminder.db"
 
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL',
                                    'redis://redis:6379')

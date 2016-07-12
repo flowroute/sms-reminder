@@ -43,7 +43,7 @@ RUN apk --update add --virtual build-deps \
  && /app/ve/bin/pip install -r /app/requirements.txt \
  && apk del build-deps
 
-VOLUME /var/lib/sqlite
+VOLUME /var/lib/sqlite/data
 # Finally copy the app, at the very end so we can cycle very quickly.
 COPY . /app
 ENTRYPOINT ["/app/entry"]
