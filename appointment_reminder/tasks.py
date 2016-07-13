@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from sqlalchemy.orm.exc import NoResultFound
 from celery import Celery
 import arrow
@@ -7,7 +9,8 @@ from FlowrouteMessagingLib.Models.Message import Message
 
 from appointment_reminder.settings import (
     FLOWROUTE_ACCESS_KEY, FLOWROUTE_SECRET_KEY, FLOWROUTE_NUMBER,
-    MSG_TEMPLATE, CONFIRMATION_RESPONSE, UNPARSABLE_RESPONSE)
+    MSG_TEMPLATE, CONFIRMATION_RESPONSE, UNPARSABLE_RESPONSE,
+    LANGUAGE_DEFAULT)
 from appointment_reminder.models import Reminder
 from appointment_reminder.database import db_session
 from appointment_reminder.log import log
@@ -35,13 +38,14 @@ celery = new_celery()
 
 
 def create_message_body(appt):
-    appt_context = ''
+    appt_context = u''
     if appt.location:
         appt_context += ' at {}'.format(appt.location)
     if appt.participant:
         appt_context += ' with {}'.format(appt.participant)
     msg = MSG_TEMPLATE.format(
-        arrow.get(appt.appt_user_dt).strftime("%A, %b %d %I:%M %p"),
+        arrow.get(appt.appt_user_dt).format('dddd MMM DD, hh:mm a',
+                                            locale=LANGUAGE_DEFAULT),
         appt_context)
     return msg
 
@@ -49,6 +53,8 @@ def create_message_body(appt):
 @celery.task(bind=True)
 def send_reminder(self, reminder_id):
     """
+    Retrieves the reminder from the database, passes message content to the
+    Flowroute SMS client. If it fails, the task is re-queued.
     """
     try:
         appt = Reminder.query.filter_by(id=reminder_id).one()
@@ -81,6 +87,11 @@ def send_reminder(self, reminder_id):
 
 @celery.task(bind=True)
 def send_reply(self, reminder_id, confirm=True):
+    """
+    Retrieves the remidner form the database, sends either a confirmation
+    or a unparsable message response to the Flowroute SMS client. If it failes,
+    the task is requeued.
+    """
     try:
         appt = Reminder.query.filter_by(id=reminder_id).one()
     except NoResultFound:
