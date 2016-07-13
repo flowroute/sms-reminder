@@ -157,7 +157,9 @@ def test_delete_reminder_success(new_appointment):
     ('no i need to cancel', False)
 
 ])
-def test_inbound_handler_success(new_appointment, response, status):
+@mock.patch('appointment_reminder.api.send_reply')
+def test_inbound_handler_success(mock_send_reply, new_appointment,
+                                 response, status):
     appt_id = new_appointment.id
     db_session.add(new_appointment)
     db_session.commit()
@@ -168,12 +170,14 @@ def test_inbound_handler_success(new_appointment, response, status):
                    }
     resp = client.post('/', data=json.dumps(inbound_req),
                        content_type='application/json')
+    assert mock_send_reply.apply_async.called == 1
     assert resp.status_code == 200
     appt = Reminder.query.filter_by(id=appt_id).one()
     assert appt.will_attend is status
 
 
-def test_inbound_handler_expired_appointment(appointment_details):
+@mock.patch('appointment_reminder.api.send_reply')
+def test_inbound_handler_expired_appointment(mock_send_reply, appointment_details):
     contact_0 = '12223333333'
     contact_1 = '12229991111'
     appt_str_time_0 = '2000-01-01T13:00+0000'
@@ -195,6 +199,7 @@ def test_inbound_handler_expired_appointment(appointment_details):
     resp = client.post('/', data=json.dumps(inbound_req),
                        content_type='application/json')
     reminders = Reminder.query.all()
+    assert mock_send_reply.apply_async.called is True
     assert len(reminders) == 1
     reminders[0].contact_num == contact_1
     assert resp.status_code == 200

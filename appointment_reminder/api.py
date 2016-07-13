@@ -210,7 +210,7 @@ def inbound_handler():
             except ConnectionError as e:
                 log.critical({"message": "unable to connect to redis",
                               "exc": type(e)})
-                db_session.rollback(appt)
+                db_session.rollback()
                 return Response(status=500)
             else:
                 db_session.commit()
