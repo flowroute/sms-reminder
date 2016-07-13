@@ -24,7 +24,7 @@ CELERY_ENABLE_UTC = True
 
 # see arrow.locales for supported languages
 LANGUAGE_DEFAULT = 'en_us'
-ORG_NAME = unicode(os.environ.get('ORG_NAME', 'Your Org Name'))
+ORG_NAME = os.environ.get('ORG_NAME', 'Your Org Name')
 
 MSG_TEMPLATE = (u"[{}]\nYou have an appointment on {{}}{{}}. "
                 u"Please reply 'Yes' to confirm, or 'No' "

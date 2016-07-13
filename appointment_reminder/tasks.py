@@ -45,8 +45,8 @@ def create_message_body(appt):
     if appt.participant:
         appt_context += ' with {}'.format(appt.participant)
     msg = MSG_TEMPLATE.format(
-        unicode(arrow.get(appt.appt_user_dt).format('dddd MMM DD, hh:mm a',
-                                                    locale=LANGUAGE_DEFAULT)),
+        arrow.get(appt.appt_user_dt).format('dddd MMMM DD, hh:mm a',
+                                            locale=LANGUAGE_DEFAULT),
         appt_context)
     return msg
 
