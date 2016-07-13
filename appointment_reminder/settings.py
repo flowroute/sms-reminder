@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
 import os
 
@@ -7,7 +8,7 @@ FLOWROUTE_ACCESS_KEY = os.environ['FLOWROUTE_ACCESS_KEY']
 FLOWROUTE_NUMBER = os.environ['FLOWROUTE_NUMBER']
 
 # Turn this to False when in production
-DEBUG_MODE = os.environ.get('DEBUG_MODE', True)
+DEBUG_MODE = os.environ.get('DEBUG_MODE', False)
 # Default to INFO log level
 LOG_LEVEL = os.environ.get('LOG_LEVEL', os.environ.get('LOG_LEVEL', 'INFO'))
 SQLALCHEMY_TRACK_MODIFICATIONS = False

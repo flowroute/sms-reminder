@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
 from sqlalchemy.orm.exc import NoResultFound
 from celery import Celery
@@ -44,8 +45,8 @@ def create_message_body(appt):
     if appt.participant:
         appt_context += ' with {}'.format(appt.participant)
     msg = MSG_TEMPLATE.format(
-        arrow.get(appt.appt_user_dt).format('dddd MMM DD, hh:mm a',
-                                            locale=LANGUAGE_DEFAULT),
+        unicode(arrow.get(appt.appt_user_dt).format('dddd MMM DD, hh:mm a',
+                                                    locale=LANGUAGE_DEFAULT)),
         appt_context)
     return msg
 
