@@ -6,7 +6,8 @@ import arrow
 
 from appointment_reminder.database import db_session
 from appointment_reminder.tasks import (send_reminder, send_reply,
-                                        create_message_body)
+                                        create_message_body,
+                                        get_locale_aware_dt_str)
 from appointment_reminder.settings import (TEST_DB, CONFIRMATION_RESPONSE,
                                            UNPARSABLE_RESPONSE)
 from appointment_reminder.service import reminder_app as app
@@ -36,7 +37,7 @@ def setup_module(function):
 @pytest.fixture
 def new_reminder():
     args = ['12223334444',
-            arrow.get('2015-03-23').replace(hours=+12),
+            arrow.get('2015-03-23').replace(hours=+13),
             24,
             'Central Park',
             'NY Running Club',
@@ -54,7 +55,7 @@ def test_send_reminder(mock_sms_controller, new_reminder):
     assert mock_sms_controller.create_message.called == 1
     msg = mock_sms_controller.create_message.call_args[0][0].content
     assert msg == ("[Your Org Name]\nYou have an appointment on Monday Mar 23, "
-                   "12:00 pm at Central Park with NY Running Club. Please "
+                   "1:00 pm at Central Park with NY Running Club. Please "
                    "reply 'Yes' to confirm, or 'No' to cancel.")
     reminder = Reminder.query.filter_by(id=reminder_id).one()
     assert reminder.sms_sent is True
@@ -76,14 +77,24 @@ def test_send_reply(mock_sms_controller, num, new_reminder, confirm, content):
     assert msg == content
 
 
-def test_create_message(new_reminder):
-    from appointment_reminder import tasks
-    tasks.LANGUAGE_DEFAULT = 'ko_kr'
+def test_create_message_body(new_reminder):
     new_reminder.contact_num = '122998778'
     db_session.add(new_reminder)
     db_session.commit()
     msg = create_message_body(new_reminder)
     assert msg == (u"[Your Org Name]\nYou have an appointment on"
-                   u" \uc6d4\uc694\uc77c  3 23, 12:00  at Central Park with NY"
+                   u" Monday Mar 23, 1:00 pm at Central Park with NY"
                    " Running Club. Please reply 'Yes' to confirm, "
                    "or 'No' to cancel.")
+
+
+@pytest.mark.parametrize('lang, expected, num', [
+    ('en_us', u'Monday Mar 23, 1:00 pm', '1222332323'),
+    ('ko_kr', u'\uc6d4\uc694\uc77c 3 23, 13:00', '2233434232'),
+])
+def test_get_locale_aware_dt_string(new_reminder, lang, expected, num):
+    new_reminder.contact_num = num
+    db_session.add(new_reminder)
+    db_session.commit()
+    msg = get_locale_aware_dt_str(new_reminder.appt_user_dt, language=lang)
+    assert msg == expected

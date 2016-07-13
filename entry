@@ -20,7 +20,7 @@ fi
 if [ "$1" = "celery_worker" ]; then
     shift
     export C_FORCE_ROOT=1
-    CMD="/app/ve/bin/celery worker --loglevel="$LOG_LEVEL" -A appointment_reminder.tasks.celery $@"
+    CMD="/app/ve/bin/celery worker --loglevel="$LOG_LEVEL" --concurrency=10 -A appointment_reminder.tasks.celery $@"
 fi
 
 exec $CMD

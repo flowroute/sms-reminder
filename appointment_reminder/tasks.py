@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from sqlalchemy.orm.exc import NoResultFound
 from celery import Celery
 import arrow
+from arrow.locales import get_locale
 
 from FlowrouteMessagingLib.Controllers.APIController import APIController
 from FlowrouteMessagingLib.Models.Message import Message
@@ -38,16 +39,32 @@ def new_celery(app=reminder_app):
 celery = new_celery()
 
 
+def get_locale_aware_dt_str(reminder_dt, language=LANGUAGE_DEFAULT):
+    locale = get_locale(language)
+    str_format = 'dddd '
+    if len(locale.month_abbreviations) == 0:
+        str_format += 'MMMM '
+    else:
+        str_format += 'MMM '
+    str_format += 'DD, '
+    if u'' in locale.meridians.values():
+        # Use a 24 hour clock
+        str_format += 'HH:mm'
+    else:
+        # Use 12 hour clock with meridian
+        str_format += 'h:mm a'
+    return arrow.get(reminder_dt).format(str_format,
+                                         locale=language).replace('  ', ' ')
+
+
 def create_message_body(appt):
     appt_context = u''
     if appt.location:
         appt_context += ' at {}'.format(appt.location)
     if appt.participant:
         appt_context += ' with {}'.format(appt.participant)
-    msg = MSG_TEMPLATE.format(
-        arrow.get(appt.appt_user_dt).format('dddd MMMM DD, hh:mm a',
-                                            locale=LANGUAGE_DEFAULT),
-        appt_context)
+    human_readable_dt_str = get_locale_aware_dt_str(appt.appt_user_dt)
+    msg = MSG_TEMPLATE.format(human_readable_dt_str, appt_context)
     return msg
 
 

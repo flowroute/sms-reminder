@@ -9,7 +9,10 @@ from appointment_reminder.log import log
 
 def configure_app(app=app):
     if DEBUG_MODE:
-        destroy_db()
+        try:
+            destroy_db()
+        except OperationalError:
+            log.info({"message": "nothing to destroy, table doesn't exist"})
         app.debug = DEBUG_MODE
         app.config.update(SQLALCHEMY_DATABASE_URI=TEST_DB)
     else:
@@ -22,6 +25,3 @@ def configure_app(app=app):
 
 
 reminder_app = configure_app()
-
-if __name__ == '__main__':
-    reminder_app.run(debug=DEBUG_MODE)
