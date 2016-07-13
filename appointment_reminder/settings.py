@@ -21,6 +21,7 @@ CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND',
                                        'redis://redis:6379')
 CELERY_ENABLE_UTC = True
 
+# see arrow.locales for supported languages
 LANGUAGE_DEFAULT = 'en_us'
 ORG_NAME = unicode(os.environ.get('ORG_NAME', 'Your Org Name'))
 

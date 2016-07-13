@@ -1,5 +1,5 @@
 from flask import Flask
-import sqlite3 as sqlite
+from sqlalchemy.exc import OperationalError
 
 from appointment_reminder.settings import DEBUG_MODE, TEST_DB, DB
 from appointment_reminder.database import init_db, destroy_db
@@ -16,7 +16,7 @@ def configure_app(app=app):
         app.config.update(SQLALCHEMY_DATABASE_URI=DB)
     try:
         init_db()
-    except sqlite.OperationalError:
+    except OperationalError:
         log.info({"message": "database already exists... moving on."})
     return app
 
