@@ -46,8 +46,8 @@ def create_message_body(appt):
     return msg
 
 
-@celery.task()
-def send_reminder(reminder_id):
+@celery.task(bind=True)
+def send_reminder(self, reminder_id):
     """
     """
     try:
@@ -68,7 +68,7 @@ def send_reminder(reminder_id):
         strerr = vars(e).get('response_body', None)
         log.critical({"message": "Raised an exception sending SMS",
                       "exc": e, "strerr": strerr, "reminder_id": reminder_id})
-        raise e
+        raise self.retry(exc=e)
     else:
         log.info(
             {"message": "Reminder sent to {} for reminder_id {}".format(
@@ -79,8 +79,8 @@ def send_reminder(reminder_id):
         db_session.commit()
 
 
-@celery.task()
-def send_reply(reminder_id, confirm=True):
+@celery.task(bind=True)
+def send_reply(self, reminder_id, confirm=True):
     try:
         appt = Reminder.query.filter_by(id=reminder_id).one()
     except NoResultFound:
@@ -102,7 +102,7 @@ def send_reply(reminder_id, confirm=True):
         strerr = vars(e).get('response_body', None)
         log.critical({"message": "Raised an exception sending SMS",
                       "exc": e, "strerr": strerr, "reminder_id": reminder_id})
-        raise e
+        raise self.retry(exc=e)
     else:
         log.info(
             {"message": "Confirmation sent to {} for reminder_id {}".format(
