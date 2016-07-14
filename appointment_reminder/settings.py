@@ -29,8 +29,10 @@ ORG_NAME = os.environ.get('ORG_NAME', 'Your Org Name')
 MSG_TEMPLATE = (u"[{}]\nYou have an appointment on {{}}{{}}. "
                 u"Please reply 'Yes' to confirm, or 'No' "
                 u"to cancel.").format(ORG_NAME)
-CONFIRMATION_RESPONSE = (u"[{}]\nThank you! Your response has been "
-                         "recorded.").format(ORG_NAME)
+CONFIRMATION_RESPONSE = (u"[{}]\nThank you! Your appointment has been marked "
+                         "confirmed.").format(ORG_NAME)
+CANCEL_RESPONSE = (u"[{}]\nThank you! Your appointment has been"
+                   u" marked canceled.").format(ORG_NAME)
 UNPARSABLE_RESPONSE = (u"[{}]\nSorry, we were unable to parse your response. "
                        u"Please reply 'Yes' to confirm, or 'No' "
                        u"to cancel.").format(ORG_NAME)

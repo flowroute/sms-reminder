@@ -9,7 +9,7 @@ from appointment_reminder.tasks import (send_reminder, send_reply,
                                         create_message_body,
                                         get_locale_aware_dt_str)
 from appointment_reminder.settings import (TEST_DB, CONFIRMATION_RESPONSE,
-                                           UNPARSABLE_RESPONSE)
+                                           UNPARSABLE_RESPONSE, CANCEL_RESPONSE)
 from appointment_reminder.service import reminder_app as app
 from appointment_reminder.models import Reminder
 
@@ -63,7 +63,8 @@ def test_send_reminder(mock_sms_controller, new_reminder):
 
 @pytest.mark.parametrize("num, confirm, content", [
     ('43332221111', True, CONFIRMATION_RESPONSE),
-    ('08889996666', False, UNPARSABLE_RESPONSE),
+    ('08889996666', None, UNPARSABLE_RESPONSE),
+    ('23333999990', False, CANCEL_RESPONSE),
 ])
 @mock.patch('appointment_reminder.tasks.sms_controller')
 def test_send_reply(mock_sms_controller, num, new_reminder, confirm, content):

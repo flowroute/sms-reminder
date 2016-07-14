@@ -204,9 +204,9 @@ def inbound_handler():
                 confirm = True
             elif 'NO' in message:
                 appt.will_attend = False
-                confirm = True
-            else:
                 confirm = False
+            else:
+                confirm = None
             db_session.add(appt)
             try:
                 send_reply.apply_async((appt.id,), {'confirm': confirm})

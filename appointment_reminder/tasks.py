@@ -11,7 +11,7 @@ from FlowrouteMessagingLib.Models.Message import Message
 
 from appointment_reminder.settings import (
     FLOWROUTE_ACCESS_KEY, FLOWROUTE_SECRET_KEY, FLOWROUTE_NUMBER,
-    MSG_TEMPLATE, CONFIRMATION_RESPONSE, UNPARSABLE_RESPONSE,
+    MSG_TEMPLATE, CONFIRMATION_RESPONSE, UNPARSABLE_RESPONSE, CANCEL_RESPONSE,
     LANGUAGE_DEFAULT)
 from appointment_reminder.models import Reminder
 from appointment_reminder.database import db_session
@@ -46,10 +46,10 @@ def get_locale_aware_dt_str(reminder_dt, language=LANGUAGE_DEFAULT):
         str_format += 'MMMM '
     else:
         str_format += 'MMM '
-    str_format += 'DD, '
+    str_format += 'D, '
     if u'' in locale.meridians.values():
         # Use a 24 hour clock
-        str_format += 'HH:mm'
+        str_format += 'H:mm'
     else:
         # Use 12 hour clock with meridian
         str_format += 'h:mm a'
@@ -117,10 +117,12 @@ def send_reply(self, reminder_id, confirm=True):
             {"message": "Received unknown appointment with id {}.".format(
              reminder_id), "reminder_id": reminder_id})
         return
-    if confirm:
-        msg_content = CONFIRMATION_RESPONSE
-    else:
+    if confirm is None:
         msg_content = UNPARSABLE_RESPONSE
+    elif confirm is True:
+        msg_content = CONFIRMATION_RESPONSE
+    elif confirm is False:
+        msg_content = CANCEL_RESPONSE
     message = Message(
         to=appt.contact_num,
         from_=FLOWROUTE_NUMBER,
