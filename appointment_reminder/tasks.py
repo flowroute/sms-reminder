@@ -12,7 +12,7 @@ from FlowrouteMessagingLib.Models.Message import Message
 from appointment_reminder.settings import (
     FLOWROUTE_ACCESS_KEY, FLOWROUTE_SECRET_KEY, FLOWROUTE_NUMBER,
     MSG_TEMPLATE, CONFIRMATION_RESPONSE, UNPARSABLE_RESPONSE, CANCEL_RESPONSE,
-    LANGUAGE_DEFAULT)
+    LOCATION_OPERATOR, PARTICIPANT_OPERATOR, LANGUAGE_DEFAULT)
 from appointment_reminder.models import Reminder
 from appointment_reminder.database import db_session
 from appointment_reminder.log import log
@@ -60,9 +60,9 @@ def get_locale_aware_dt_str(reminder_dt, language=LANGUAGE_DEFAULT):
 def create_message_body(appt):
     appt_context = u''
     if appt.location:
-        appt_context += ' at {}'.format(appt.location)
+        appt_context += ' {} {}'.format(LOCATION_OPERATOR, appt.location)
     if appt.participant:
-        appt_context += ' with {}'.format(appt.participant)
+        appt_context += ' {} {}'.format(PARTICIPANT_OPERATOR, appt.participant)
     human_readable_dt_str = get_locale_aware_dt_str(appt.appt_user_dt)
     msg = MSG_TEMPLATE.format(human_readable_dt_str, appt_context)
     return msg

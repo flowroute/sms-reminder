@@ -8,7 +8,11 @@ FLOWROUTE_ACCESS_KEY = os.environ['FLOWROUTE_ACCESS_KEY']
 FLOWROUTE_NUMBER = os.environ['FLOWROUTE_NUMBER']
 
 # Turn this to False when in production
-DEBUG_MODE = os.environ.get('DEBUG_MODE', False)
+is_debug = os.environ.get('DEBUG_MODE', 'false')
+if is_debug.lower() == 'true':
+    DEBUG_MODE = True
+else:
+    DEBUG_MODE = False
 # Default to INFO log level
 LOG_LEVEL = os.environ.get('LOG_LEVEL', os.environ.get('LOG_LEVEL', 'INFO'))
 SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -29,6 +33,8 @@ ORG_NAME = os.environ.get('ORG_NAME', 'Your Org Name')
 MSG_TEMPLATE = (u"[{}]\nYou have an appointment on {{}}{{}}. "
                 u"Please reply 'Yes' to confirm, or 'No' "
                 u"to cancel.").format(ORG_NAME)
+LOCATION_OPERATOR = u"at"
+PARTICIPANT_OPERATOR = u"with"
 CONFIRMATION_RESPONSE = (u"[{}]\nThank you! Your appointment has been marked "
                          "confirmed.").format(ORG_NAME)
 CANCEL_RESPONSE = (u"[{}]\nThank you! Your appointment has been"
