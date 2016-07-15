@@ -112,7 +112,8 @@ def get_reminders():
             'appt_user_dt': str(rm.appt_user_dt), 'appt_sys_dt':
             str(rm.appt_sys_dt), 'notify_sys_dt': str(rm.notify_sys_dt),
             'will_attend': rm.will_attend, 'location': rm.location,
-            'participant': rm.participant, 'sms_sent': rm.sms_sent}
+            'participant': rm.participant, 'sms_sent': rm.sms_sent,
+            'confirm_sent': rm.conf_sent}
            for rm in reminders]
     return Response(json.dumps({"reminders": res}), status=200,
                     content_type='application/json')
@@ -135,7 +136,8 @@ def get_reminder(reminder_id):
                'appt_user_dt': str(rm.appt_user_dt), 'appt_sys_dt':
                str(rm.appt_sys_dt), 'notify_sys_dt': str(rm.notify_sys_dt),
                'will_attend': rm.will_attend, 'location': rm.location,
-               'participant': rm.participant, 'sms_sent': rm.sms_sent}
+               'participant': rm.participant, 'sms_sent': rm.sms_sent,
+               'confirm_sent': rm.conf_sent}
         return Response(
             response=json.dumps(res),
             status=200, content_type='application/json')
