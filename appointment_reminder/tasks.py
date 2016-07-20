@@ -98,7 +98,7 @@ def send_reminder(self, reminder_id):
             {"message": "Reminder sent to {} for reminder_id {}".format(
              appt.contact_num, reminder_id),
              "reminder_id": reminder_id})
-        appt.sms_sent = True
+        appt.reminder_sent = True
         db_session.add(appt)
         db_session.commit()
 
@@ -135,7 +135,7 @@ def send_reply(self, reminder_id, confirm=True):
                       "exc": e, "strerr": strerr, "reminder_id": reminder_id})
         raise self.retry(exc=e)
     else:
-        appt.conf_sent = True
+        appt.confirm_sent = True
         db_session.add(appt)
         db_session.commit()
         log.info(

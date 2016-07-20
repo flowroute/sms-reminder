@@ -58,7 +58,7 @@ def test_send_reminder(mock_sms_controller, new_reminder):
                    "1:00 pm at Central Park with NY Running Club. Please "
                    "reply 'Yes' to confirm, or 'No' to cancel.")
     reminder = Reminder.query.filter_by(id=reminder_id).one()
-    assert reminder.sms_sent is True
+    assert reminder.reminder_sent is True
 
 
 @pytest.mark.parametrize("num, confirm, content", [

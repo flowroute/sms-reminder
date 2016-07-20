@@ -31,8 +31,8 @@ class Reminder(Base):
     notify_sys_dt = Column(DateTime)
     location = Column(String(128), nullable=True)
     participant = Column(String(256), nullable=True)
-    sms_sent = Column(Boolean, nullable=False, default=False)
-    conf_sent = Column(Boolean, nullable=False, default=False)
+    reminder_sent = Column(Boolean, nullable=False, default=False)
+    confirm_sent = Column(Boolean, nullable=False, default=False)
     will_attend = Column(Boolean, nullable=True, default=None)
 
     def __init__(self, contact_num, appt_dt, notify_hrs_before, location,
