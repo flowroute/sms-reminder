@@ -10,6 +10,7 @@ from appointment_reminder.log import log
 def configure_app(app=app):
     if DEBUG_MODE:
         try:
+            log.info({"message": "attempting to destroy db"})
             destroy_db()
         except OperationalError:
             log.info({"message": "nothing to destroy, table doesn't exist"})

@@ -17,7 +17,7 @@ else:
 LOG_LEVEL = os.environ.get('LOG_LEVEL', os.environ.get('LOG_LEVEL', 'INFO'))
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-TEST_DB = "sqlite:///test_appt_reminder.db"
+TEST_DB = "sqlite:////var/lib/sqlite/data/test_appt_reminder.db"
 DB = "sqlite:////var/lib/sqlite/data/appt_reminder.db"
 
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL',
