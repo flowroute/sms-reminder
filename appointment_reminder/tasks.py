@@ -71,8 +71,8 @@ def create_message_body(appt):
 @celery.task(bind=True)
 def send_reminder(self, reminder_id):
     """
-    Retrieves the reminder from the database, passes message content to the
-    Flowroute SMS client. If it fails, the task is re-queued.
+    Retrieves the reminder from the database, passes the message content to the
+    Flowroute SMS client for dispatch. If it fails, the task is re-queued.
     """
     try:
         appt = Reminder.query.filter_by(id=reminder_id).one()
@@ -106,9 +106,9 @@ def send_reminder(self, reminder_id):
 @celery.task(bind=True)
 def send_reply(self, reminder_id, confirm=True):
     """
-    Retrieves the remidner form the database, sends either a confirmation
-    or a unparsable message response to the Flowroute SMS client. If it failes,
-    the task is requeued.
+    Retrieves the reminder from the database, and sends either a confirmation
+    or an unparsable message response to the Flowroute SMS client. If that fails,
+    the task is re-queued.
     """
     try:
         appt = Reminder.query.filter_by(id=reminder_id).one()
