@@ -16,7 +16,8 @@ You will need the following before running the Appointment Reminder service:
 
 - [Flowroute API credentials](https://manage.flowroute.com/accounts/preferences/api/) 
 
-- A [Flowroute Phone Number](https://manage.flowroute.com/accounts/dids/) enabled for SMS</a> 
+- A [Flowroute Phone Number](https://manage.flowroute.com/accounts/dids/) enabled for SMS
+- The [Flowroute Messaging Python SDK](https://github.com/flowroute/flowroute-messaging-python/) installed
 
 -  Docker
 
@@ -26,25 +27,93 @@ You will need the following before running the Appointment Reminder service:
 
 ## Run git clone to import the library and set your API credentials
 
-1.	If needed, in a terminal window create a parent directory where you want to deploy Appointment Reminder service.
+1. Open a terminal window.
+ 
+2.  If needed, create a directory where you want to deploy Appointment Reminder service.
 
-2.	Change to the parent directory, and run the following:
+3.  Change to the directory, and run the following:
 
-		git clone git@gitlab.internal:l-pod/appointment-reminder.git
+        git clone git@gitlab.internal:l-pod/appointment-reminder.git
 
-	The git clone command clones the Appointment Reminder repository as a sub directory within the parent folder.
-	
-3.  Go to **.\apppointment_reminder\appointment_reminder**.
+ The `git clone` command clones the Appointment Reminder repository as a sub directory within the parent folder.
 
-4. Using a code text editor, open **settings.py.** In this file set your API credentials by replacing the FLOWROUTE_SECRET_KEY and FLOWROUTE_ACCESS_KEY with your own API credentials, and replace FLOWROUTE_NUMBER with your own number.
+3.  Go to the **appointment_reminder** directory.
 
-       	FLOWROUTE_SECRET_KEY = os.environ['FLOWROUTE_SECRET_KEY']
-       	FLOWROUTE_ACCESS_KEY = os.environ['FLOWROUTE_ACCESS_KEY']
-       	FLOWROUTE_NUMBER = os.environ['FLOWROUTE_NUMBER']
+4.  Run the following:
 
-5. Start the Appointment Reminder service.
+        pip install -r requirements.txt
 
-## Start the Appointment Reminder service
+5. Go to the **appointment_reminder** sub directory, and using a code text editor, open **settings.py.** .
+
+ 	In this file set your API credentials by replacing the `FLOWROUTE_SECRET_KEY` and `FLOWROUTE_ACCESS_KEY` with your own API credentials, replace `FLOWROUTE_NUMBER` with your own number, and your `ORG_NAME` with the name of your organization or business.
+
+      	FLOWROUTE_SECRET_KEY = os.environ['FLOWROUTE_SECRET_KEY']
+      	FLOWROUTE_ACCESS_KEY = os.environ['FLOWROUTE_ACCESS_KEY']
+      	FLOWROUTE_NUMBER = os.environ['FLOWROUTE_NUMBER']
+    	
+      	ORG_NAME = os.environ.get('ORG_NAME', 'Your Org Name')
+
+5.	Do one of the following:
+ 
+ * Save the file, then [start the Appointment Reminder service](#startservice), or 
+ 
+ *  Optionally change the appointment reminder message and DateTime language, and then  [start the Appointment Reminder service](#startservice).
+
+## Change messages and DateTime language
+
+Within **settings.py** you can change appointment reminder messages as well as change the language used for the DateTime in reminder messages.
+
+### Change messages
+
+**settings.py** contains default appointment reminder, confirmation, cancel, and unparsable response messages. You can accept these default messages or optionally change any or all of the messages. 
+
+###### MSG_TEMPLATE
+
+Change the appointment reminder message sent to recipients.
+
+	MSG_TEMPLATE = ("[{}] You have an appointment on {}{}. "  # company, datetime, additional details 
+           "Please reply 'Yes' to confirm, or 'No'" 
+           "to cancel.")
+
+ >**Important:** Do not remove or change the brackets (`{}`)within the message template.
+
+###### CONFIRMATION_RESPONSE
+
+Change the response message sent to the recipient upon a successful appointment confirmation received from the recipient.
+
+	CONFIRMATION_RESPONSE = (u"[{}]\nThank you! Your appointment has been marked "
+                         "confirmed.").format(ORG_NAME)
+
+###### CANCEL_RESPONSE
+
+Change the cancellation response message sent to the recipient upon a successful appointment cancellation response received from the recipient.
+
+	CANCEL_RESPONSE = (u"[{}]\nThank you! Your appointment has been"
+                   u" marked canceled.").format(ORG_NAME)
+
+###### UNPARSABLE_RESPONSE
+
+An unparsable response is a response received from a recipient that cannot be understood. For example, if the MSG_TEMPLATE says to reply with `Yes` or `No`, but the recipient sends something other than either of those two options, the Appointment Reminder service will be unable to determine the response. The unparsable response message is a return message to the recipient prompting them again to respond with either `Yes` or `No`.
+
+	UNPARSABLE_RESPONSE = (u"[{}]\nSorry, we were unable to parse your response. "
+                       u"Please reply 'Yes' to confirm, or 'No' "
+                       u"to cancel.").format(ORG_NAME)
+
+##### Change the default DateTime language
+
+You can set the DateTime of the reminder message to use any language supported by [arrow.locales](https://github.com/crsmithdev/arrow/blob/master/arrow/locales.py). Changing the default language translates only the DateTime values sent in the message to use those languages.
+
+To change the default language use the `names` identifying the language in **arrow.locales**. For example, to change the default language to French, in **settings.py** change `LANGUAGE_DEFAULT` as follows:
+
+	LANGUAGE_DEFAULT = 'fr'
+
+Some languages in **arrow.locales** have abbreviated forms for months and days. If the language has abbreviated forms, that abbreviated form will be used in the message. For example, in French, the abbreviated form of **mercredi** (Wednesday) is **mer**, and **juillet** (July) is **juil**. An appointment reminder using a French DateTime will send the abbreviated forms.
+
+>**Important:** If you change the `DEFAULT_LANGUAGE` you should consider also translating your appointment reminder messages. Changing the default language only translates the reminder DateTime into that language, not the message itself. 
+
+>For example, if your language is English your reminder message might say: "You have an appointment on Wednesday, July 21 at 2:00 PM. Please reply Yes to confirm, or No to cancel." If French is set as the default language, the same message appears as follows: "You have an appointment on mer 21 juil à 14:00. Please reply Yes to confirm, or No to cancel."	
+
+## Start the Appointment Reminder service<a name="startservice"></a>
 
 1.	Start the Redis server:
 
@@ -178,7 +247,7 @@ Use the DELETE method and pass an existing `reminder_id` to delete an appointmen
 ##### Example Response
 A successful DELETE returns the following:
 	  
-	 {"reminder_id": "00795872bc554893bde41f3f9cb807d0", "message": "successfully deleted reminder with id 00795872bc554893bde41f3f9cb807d0"}```
+	{"reminder_id": "00795872bc554893bde41f3f9cb807d0", "message": "successfully deleted reminder with id 00795872bc554893bde41f3f9cb807d0"}```
 
 #### Error response
 
