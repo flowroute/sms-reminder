@@ -39,6 +39,6 @@ CONFIRMATION_RESPONSE = (u"[{}]\nThank you! Your appointment has been marked "
                          "confirmed.").format(ORG_NAME)
 CANCEL_RESPONSE = (u"[{}]\nThank you! Your appointment has been"
                    u" marked canceled.").format(ORG_NAME)
-UNPARSABLE_RESPONSE = (u"[{}]\nSorry, we were unable to parse your response. "
-                       u"Please reply 'Yes' to confirm, or 'No' "
+UNPARSABLE_RESPONSE = (u"[{}]\nSorry, we did not understand your "
+                       u"response. Please reply 'Yes' to confirm, or 'No' "
                        u"to cancel.").format(ORG_NAME)

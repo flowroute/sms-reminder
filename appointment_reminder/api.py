@@ -75,8 +75,8 @@ def add_reminder():
     try:
         db_session.commit()
     except IntegrityError:
-        msg = ("unable to create a new reminder. duplicate "
-               "contact_number {}".format(contact_num))
+        msg = ("Unable to create a new reminder. Duplicate "
+               "contact_number {}.".format(contact_num))
         log.error({"message": msg})
         return Response(json.dumps({"message": msg}), status=400,
                         content_type="application/json")
@@ -90,12 +90,12 @@ def add_reminder():
             db_session.delete(reminder)
             db_session.commit()
             return Response(json.dumps(
-                {"message": ("unable to create a new reminder."
-                             " redis is unreachable"),
+                {"message": ("Unable to create a new reminder."
+                             " Redis is unreachable."),
                  "exc": "RedisConnectionError"}),
                 status=500, content_type="application/json")
 
-        msg = "successfully created a reminder with id {}".format(reminder.id)
+        msg = "Successfully created a reminder with id {}.".format(reminder.id)
         log.info({"message": msg})
         content = json.dumps({"message": msg, "reminder_id": reminder.id})
         return Response(content, status=200,
@@ -136,8 +136,8 @@ def get_reminder(reminder_id):
                'appt_user_dt': str(rm.appt_user_dt), 'appt_sys_dt':
                str(rm.appt_sys_dt), 'notify_sys_dt': str(rm.notify_sys_dt),
                'will_attend': rm.will_attend, 'location': rm.location,
-               'participant': rm.participant, 'reminder_sent': rm.reminder_sent,
-               'confirm_sent': rm.confirm_sent}
+               'participant': rm.participant, 'reminder_sent':
+               rm.reminder_sent, 'confirm_sent': rm.confirm_sent}
         return Response(
             response=json.dumps(res),
             status=200, content_type='application/json')
@@ -158,7 +158,7 @@ def remove_reminder(reminder_id):
     else:
         db_session.delete(reminder)
         db_session.commit()
-        msg = "successfully deleted reminder with id {}".format(reminder_id)
+        msg = "Successfully deleted reminder with id {}.".format(reminder_id)
         log.info({"message": msg})
         return Response(
             response=json.dumps({"message": msg, "reminder_id": reminder_id}),
@@ -195,7 +195,7 @@ def inbound_handler():
             appt = Reminder.query.filter_by(
                 contact_num=sms_from).one()
         except NoResultFound:
-            msg = "no existing un-responded reminder for contact {}".format(
+            msg = "No existing un-responded reminder for contact {}.".format(
                 sms_from)
             log.info({"message": msg})
             return Response(status=200)
