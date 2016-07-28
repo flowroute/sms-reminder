@@ -35,7 +35,7 @@ You will need the following before running the Appointment Reminder service:
 
         git clone git@gitlab.internal:l-pod/appointment-reminder.git
 
- The `git clone` command clones the Appointment Reminder repository as a sub directory within the parent folder.
+ 	The `git clone` command clones the Appointment Reminder repository as a sub directory within the parent folder.
 
 3.  Go to the **appointment_reminder** directory.
 
@@ -63,9 +63,9 @@ You will need the following before running the Appointment Reminder service:
 
 Within **settings.py** you can change appointment reminder messages as well as change the language used for the DateTime in reminder messages.
 
-### Change messages
+### Change message text
 
-**settings.py** contains default appointment reminder, confirmation, cancel, and unparsable response messages. You can accept these default messages or optionally change any or all of the messages. 
+**settings.py** contains default appointment reminder, confirmation, cancel, and unparsable response message templates. You can accept these default messages or optionally change any or all of the messages. 
 
 ###### MSG_TEMPLATE
 
@@ -93,21 +93,23 @@ Change the cancellation response message sent to the recipient upon a successful
 
 ###### UNPARSABLE_RESPONSE
 
-An unparsable response is a response received from a recipient that cannot be understood. For example, if the MSG_TEMPLATE says to reply with `Yes` or `No`, but the recipient sends something other than either of those two options, the Appointment Reminder service will be unable to determine the response. The unparsable response message is a return message to the recipient prompting them again to respond with either `Yes` or `No`.
+An unparsable response is a response received from a recipient that cannot be understood. For example, if the `MSG_TEMPLATE` asks the recipient to reply with `Yes` or `No`, but the recipient sends something other than either of those two options, the Appointment Reminder service will be unable to determine the response. The unparsable response message is a return message to the recipient prompting them again to respond with either `Yes` or `No`.
 
 	UNPARSABLE_RESPONSE = (u"[{}]\nSorry, we were unable to parse your response. "
                        u"Please reply 'Yes' to confirm, or 'No' "
                        u"to cancel.").format(ORG_NAME)
 
+>**Note:** `Yes` or `No` are case-insensitive, so a `yes` or `no` response are parsed as `Yes` or `No`.
+
 ##### Change the default DateTime language
 
-You can set the DateTime of the reminder message to use any language supported by [arrow.locales](https://github.com/crsmithdev/arrow/blob/master/arrow/locales.py). Changing the default language translates only the DateTime values sent in the message to use those languages.
+In **settings.py** you can set the DateTime of the reminder message to use any language supported by [arrow.locales](https://github.com/crsmithdev/arrow/blob/master/arrow/locales.py). Changing the default DateTime language translates only the DateTime values sent in the message to use those languages, not the content of the message itself.
 
-To change the default language use the `names` identifying the language in **arrow.locales**. For example, to change the default language to French, in **settings.py** change `LANGUAGE_DEFAULT` as follows:
+To change the default language use the `names` identifying the language in **arrow.locales**. For example, to change the default language to French, edit `LANGUAGE_DEFAULT` as follows:
 
 	LANGUAGE_DEFAULT = 'fr'
 
-Some languages in **arrow.locales** have abbreviated forms for months and days. If the language has abbreviated forms, that abbreviated form will be used in the message. For example, in French, the abbreviated form of **mercredi** (Wednesday) is **mer**, and **juillet** (July) is **juil**. An appointment reminder using a French DateTime will send the abbreviated forms.
+Some languages in **arrow.locales** also include abbreviated forms for months and days. If the language has abbreviated forms, that abbreviated form will be used in the message. For example, in French, the abbreviated form of **mercredi** (Wednesday) is **mer**, and **juillet** (July) is **juil**. An appointment reminder using a French DateTime will send the abbreviated forms.
 
 >**Important:** If you change the `DEFAULT_LANGUAGE` you should consider also translating your appointment reminder messages. Changing the default language only translates the reminder DateTime into that language, not the message itself. 
 
@@ -168,8 +170,8 @@ A successful POST returns a `reminder_id`, as shown in the following:
 
 The following error responses can be returned:
 
-*	400 for an invalid argument
-* 	500 if Redis is unavailable
+*	**400** for an invalid argument
+* 	**500** if Redis is unavailable
 	
 ### Retrieve a single reminder<a name=getsingle></a>
 
