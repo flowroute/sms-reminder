@@ -95,7 +95,7 @@ Change the cancellation response message sent to the recipient upon a successful
 
 An unparsable response is a response received from a recipient that cannot be understood. For example, if the `MSG_TEMPLATE` asks the recipient to reply with `Yes` or `No`, but the recipient sends something other than either of those two options, the Appointment Reminder service will be unable to determine the response. The unparsable response message is a return message to the recipient prompting them again to respond with either `Yes` or `No`.
 
-	UNPARSABLE_RESPONSE = (u"[{}]\nSorry, we were unable to parse your response. "
+	UNPARSABLE_RESPONSE = (u"[{}]\nSorry, we did not understand your response. "
                        u"Please reply 'Yes' to confirm, or 'No' "
                        u"to cancel.").format(ORG_NAME)
 
@@ -209,7 +209,34 @@ Use the GET method to retrieve a list of reminders.
 
 A successful GET returns the following:
 	
-	{"reminders": [{"confirm_sent": true, "contact_number": "12069928996", "participant": "Joe", "location": "West Side Mechanics", "reminder_id": "2a00aadba83b40aa8a3a6e99a1bd88b9", "appt_user_dt": "2016-07-15 11:40:00", "will_attend": true, "notify_sys_dt": "2016-07-15 17:40:00", "reminder_sent": true, "appt_sys_dt": "2016-07-15 18:40:00"}]}
+	{  
+  	 "reminders":[  
+      {  
+         "confirm_sent":false,
+         "contact_number":"12062223333",
+         "participant":"Joe",
+         "location":"West Side Mechanics",
+         "reminder_sent":false,
+         "reminder_id":"e616e7b6732d4c9787bb5f7f6bc390f0",
+         "appt_user_dt":"2016-08-05 13:21:00",
+         "will_attend":null,
+         "notify_sys_dt":"2016-08-05 19:21:00",
+         "appt_sys_dt":"2016-08-05 20:21:00"
+      },
+      {  
+         "confirm_sent":false,
+         "contact_number":"12064447777",
+         "participant":"Joe",
+         "location":"West Side Mechanics",
+         "reminder_sent":false,
+         "reminder_id":"98dc1efb27ce419caaee94ccf660227c",
+         "appt_user_dt":"2016-08-10 13:21:00",
+         "will_attend":null,
+         "notify_sys_dt":"2016-08-10 19:21:00",
+         "appt_sys_dt":"2016-08-10 20:21:00"
+  	    }
+ 	  ]
+	}
 
 #### Response field descriptions
 
@@ -249,7 +276,7 @@ Use the DELETE method and pass an existing `reminder_id` to delete an appointmen
 ##### Example Response
 A successful DELETE returns the following:
 	  
-	{"reminder_id": "00795872bc554893bde41f3f9cb807d0", "message": "successfully deleted reminder with id 00795872bc554893bde41f3f9cb807d0"}```
+	{"reminder_id": "00795872bc554893bde41f3f9cb807d0", "message": "Successfully deleted reminder with id 00795872bc554893bde41f3f9cb807d0"}```
 
 #### Error response
 
