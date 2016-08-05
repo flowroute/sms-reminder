@@ -8,8 +8,7 @@ redis:
     - 6379
 api:
   mem_limit: 256000000
-  image: image: 013610747785.dkr.ecr.us-west-2.amazonaws.com/appointment-reminder:0.0.3
-#  build: .
+  build: .
   command: serve
   links:
     - redis
@@ -19,14 +18,13 @@ api:
      - /var/lib/sqlite/data:/var/lib/sqlite/data
   environment:
     LOG_LEVEL: INFO
-    FLOWROUTE_ACCESS_KEY: 42109098
-    FLOWROUTE_SECRET_KEY: 02c39ace6adefd15d29a1b652344fcf8
-    FLOWROUTE_NUMBER: 12064520945
+    FLOWROUTE_ACCESS_KEY: foo
+    FLOWROUTE_SECRET_KEY: bar
+    FLOWROUTE_NUMBER: 11111111111
     ORG_NAME: Flowroute
 celery:
   mem_limit: 256000000
-#  build: .
-  image: 013610747785.dkr.ecr.us-west-2.amazonaws.com/appointment-reminder:0.0.3
+  build: .
   command: celery_worker
   volumes:
     - /var/lib/sqlite/data:/var/lib/sqlite/data
@@ -36,5 +34,5 @@ celery:
     LOG_LEVEL: INFO
     FLOWROUTE_ACCESS_KEY: foo
     FLOWROUTE_SECRET_KEY: bar
-    FLOWROUTE_NUMBER: 12064520945
+    FLOWROUTE_NUMBER: 11111111111
     ORG_NAME: Flowroute
