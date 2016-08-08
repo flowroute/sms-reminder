@@ -33,7 +33,7 @@ You will need the following before running the Appointment Reminder service:
 
 3.  Change to the directory, and run the following:
 
-        git clone git@gitlab.internal:l-pod/appointment-reminder.git
+        git clone https://github.com/flowroute/sms-reminder.git
 
  	The `git clone` command clones the Appointment Reminder repository as a sub directory within the parent folder.
 
