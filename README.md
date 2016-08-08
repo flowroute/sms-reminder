@@ -37,13 +37,13 @@ You will need the following before running the Appointment Reminder service:
 
  	The `git clone` command clones the Appointment Reminder repository as a sub directory within the parent folder.
 
-3.  Go to the **appointment_reminder** directory.
+3.  Go to the **sms_reminder** directory.
 
 4.  Run the following:
 
         pip install -r requirements.txt
 
-5. Go to the **appointment_reminder** sub directory, and using a code text editor, open **settings.py.** .
+5. Go to the **appointment_reminder** sub directory, and using a code text editor, open **settings.py**.
 
  	In this file set your API credentials by replacing the `FLOWROUTE_SECRET_KEY` and `FLOWROUTE_ACCESS_KEY` with your own API credentials, replace `FLOWROUTE_NUMBER` with your own number, and your `ORG_NAME` with the name of your organization or business.
 
