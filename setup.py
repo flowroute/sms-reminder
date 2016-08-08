@@ -11,7 +11,7 @@ setup(
     author = "Flowroute Developers",
     description = ("A time-zone aware SMS based reminder service."),
     packages=['appointment_reminder'],
-    url='git@gitlab.internal:l-pod/appointment-reminder.git',
+    url='https://github.com/flowroute/sms-reminder.git',
     classifiers=[
         "Development Status :: 1",
         "Topic :: Utilities",
