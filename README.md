@@ -1,6 +1,6 @@
 # Appointment Reminder
 
-Appointment Reminder is a microservice that allows you to send appointment reminders to users. For example, you might manage appointments at a medical clinic. This service can be used to send reminders at a time that you set to patients of upcoming appointments. The patient is them prompted to confirm yes or no to the reminder message.
+Appointment Reminder is a microservice that allows you to send appointment reminders to users. For example, you might manage appointments at a medical clinic. This service can be used to send reminders at a time that you set to patients of upcoming appointments. The patient is then prompted to confirm yes or no to the reminder message.
 
 The service uses a SQL backend and exposes an API endpoint that uses the following methods:
 
@@ -8,7 +8,7 @@ The service uses a SQL backend and exposes an API endpoint that uses the followi
 
 *  **GET** to retrieve an appointment reminder or a list of reminders.
 
-*  **POST** to delete an appointment reminder.
+*  **DELETE** to delete an appointment reminder.
 
 ## Before you begin
 
