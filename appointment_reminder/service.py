@@ -1,4 +1,4 @@
-from flask import Flask
+import sys
 from sqlalchemy.exc import OperationalError
 
 from appointment_reminder.settings import DEBUG_MODE, TEST_DB, DB
@@ -20,8 +20,10 @@ def configure_app(app=app):
         app.config.update(SQLALCHEMY_DATABASE_URI=DB)
     try:
         init_db()
-    except OperationalError:
+    except OperationalError as exc_info:
         log.info({"message": "database already exists... moving on."})
+        log.info({"error": exc_info})
+        sys.exit()
     return app
 
 

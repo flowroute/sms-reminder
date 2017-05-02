@@ -2,8 +2,6 @@ redis:
   mem_limit: 128000000
   image: redis:3.0-alpine
   command: redis-server
-  volumes:
-    - /var/lib/redis/data:/var/lib/redis/data
   ports:
     - 6379
 api:
@@ -15,7 +13,7 @@ api:
   ports:
     - 8000:8000
   volumes:
-     - /var/lib/sqlite/data:/var/lib/sqlite/data
+     - ./sqlite:/var/lib/sqlite/data
   environment:
     LOG_LEVEL: INFO
     FLOWROUTE_ACCESS_KEY: foo
@@ -27,7 +25,7 @@ celery:
   build: .
   command: celery_worker
   volumes:
-    - /var/lib/sqlite/data:/var/lib/sqlite/data
+     - ./sqlite:/var/lib/sqlite/data
   links:
     - redis
   environment:

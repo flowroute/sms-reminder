@@ -8,13 +8,13 @@ FLOWROUTE_ACCESS_KEY = os.environ['FLOWROUTE_ACCESS_KEY']
 FLOWROUTE_NUMBER = os.environ['FLOWROUTE_NUMBER']
 
 # Turn this to False when in production
-is_debug = os.environ.get('DEBUG_MODE', 'false')
+is_debug = os.environ.get('DEBUG_MODE', 'True')
 if is_debug.lower() == 'true':
     DEBUG_MODE = True
 else:
     DEBUG_MODE = False
 # Default to INFO log level
-LOG_LEVEL = os.environ.get('LOG_LEVEL', os.environ.get('LOG_LEVEL', 'INFO'))
+LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 TEST_DB = "sqlite:////var/lib/sqlite/data/test_appt_reminder.db"
