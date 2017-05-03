@@ -78,9 +78,6 @@ target/
 # celery beat schedule file
 celerybeat-schedule
 
-# dotenv
-.env
-
 # virtualenv
 venv/
 ENV/
@@ -93,3 +90,7 @@ ENV/
 
 # Application environment settings
 env
+
+# dotenv. Uncomment when checking in your own code.
+#.env
+

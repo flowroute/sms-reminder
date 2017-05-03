@@ -7,7 +7,7 @@ redis:
 api:
   mem_limit: 256000000
   build: .
-  command: serve
+  command: serve-docker
   links:
     - redis
   ports:
@@ -16,10 +16,12 @@ api:
      - ./sqlite:/var/lib/sqlite/data
   environment:
     LOG_LEVEL: INFO
-    FLOWROUTE_ACCESS_KEY: foo
-    FLOWROUTE_SECRET_KEY: bar
-    FLOWROUTE_NUMBER: 11111111111
+    FLOWROUTE_ACCESS_KEY: YOUR_FLOWROUTE_ACCESS_KEY
+    FLOWROUTE_SECRET_KEY: YOUR_FLOWROUTE_ACCESS_KEY
+    FLOWROUTE_NUMBER: YOUR_FLOWROUTE_TELEPHONE_NUMBER
     ORG_NAME: Flowroute
+    CELERY_BROKER_URL: redis://redis:6379
+    CELERY_RESULT_BACKEND: redis://redis:6379
 celery:
   mem_limit: 256000000
   build: .
@@ -30,7 +32,9 @@ celery:
     - redis
   environment:
     LOG_LEVEL: INFO
-    FLOWROUTE_ACCESS_KEY: foo
-    FLOWROUTE_SECRET_KEY: bar
-    FLOWROUTE_NUMBER: 11111111111
+    FLOWROUTE_ACCESS_KEY: YOUR_FLOWROUTE_ACCESS_KEY
+    FLOWROUTE_SECRET_KEY: YOUR_FLOWROUTE_ACCESS_KEY
+    FLOWROUTE_NUMBER: YOUR_FLOWROUTE_TELEPHONE_NUMBER
     ORG_NAME: Flowroute
+    CELERY_BROKER_URL: redis://redis:6379
+    CELERY_RESULT_BACKEND: redis://redis:6379

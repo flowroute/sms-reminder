@@ -14,6 +14,11 @@ fi
 
 if [ "$1" = "serve" ]; then
    shift
+   CMD="gunicorn -b 0.0.0.0:8000 -w 4 appointment_reminder.service:reminder_app $@"
+fi
+
+if [ "$1" = "serve-docker" ]; then
+   shift
    CMD="/app/ve/bin/gunicorn -b 0.0.0.0:8000 -w 4 appointment_reminder.service:reminder_app $@"
 fi
 
